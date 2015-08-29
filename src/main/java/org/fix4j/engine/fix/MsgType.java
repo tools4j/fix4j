@@ -162,7 +162,7 @@ public enum MsgType {
 		return msgType;
 	}
 	
-	public static MsgType parse(CharSequence msgType) {
+	public static MsgType parse(final CharSequence msgType) {
 		final int i = lookupIndex0(msgType);
 		final int j = lookupIndex1(msgType);
 		return LOOKUP[i][j];
@@ -183,11 +183,12 @@ public enum MsgType {
 		}
 		return types;
 	}
-	private static final int lookupIndex0(CharSequence msgType) {
-		if (msgType.length() == 1) {
+	private static final int lookupIndex0(final CharSequence msgType) {
+		final int len = msgType.length();
+		if (len == 1) {
 			return 0;
 		}
-		if (msgType.length() == 2) {
+		if (len == 2) {
 			final char ch = msgType.charAt(0);
 			if (ch >= 'A' & ch <= LOOKUP_MAX_LEADING) {
 				return ch - 'A' + 1;
@@ -196,8 +197,9 @@ public enum MsgType {
 		}
 		throw new IllegalArgumentException("Not a valid msgType value: " + msgType);
 	}
-	private static final int lookupIndex1(CharSequence msgType) {
-		if (msgType.length() == 1) {
+	private static final int lookupIndex1(final CharSequence msgType) {
+		final int len = msgType.length();
+		if (len == 1) {
 			final char ch = msgType.charAt(0);
 			if (ch >= '0' & ch <= '9') {
 				return ch - '0';
@@ -207,12 +209,11 @@ public enum MsgType {
 				return '9' - '0' + 1 + 'Z' - 'A' + 1 + ch - 'a';
 			}
 			//else throw exception below
-		} else if (msgType.length() == 2) {
+		} else if (len == 2) {
 			final char ch = msgType.charAt(1);
 			if (ch >= 'A' & ch <= 'Z') {
-				final int res = ch - 'A';
 				if (ch <= LOOKUP_MAX_TRAILING || msgType.charAt(0) < LOOKUP_MAX_LEADING) {
-					return res;
+					return ch - 'A';
 				}
 			}
 			//else throw exception below
