@@ -1,0 +1,145 @@
+apply plugin: 'java'
+apply plugin: 'jacoco'
+apply plugin: 'license'
+
+//temporary jacoco fix for java8
+jacoco {
+    toolVersion = "0.7.1.201405082137"
+}
+
+sourceCompatibility = 1.8
+group = "org.fix4j"
+version = '1.0.1-SNAPSHOT'
+archivesBaseName = "fix4j-engine"
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'fix4j', 'Implementation-Version': version
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+buildscript {
+	repositories {
+		mavenCentral()
+		jcenter()
+	}
+	
+	dependencies {
+		classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.11.0'
+		classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.5.3"
+	}
+}
+
+dependencies {
+    testCompile 'junit:junit:4.11'
+}
+
+uploadArchives {
+    repositories {
+       flatDir {
+           dirs 'build/repositories'
+       }
+    }
+}
+
+license {
+    header rootProject.file('src/main/resources/LICENSE.template')
+    strictCheck true
+	include "**/*.java"
+	ext.year = Calendar.getInstance().get(Calendar.YEAR)
+}
+
+compileJava.dependsOn licenseFormat
+
+javadoc {
+	options.showFromPackage()
+	options.linkSource()
+	options.links("http://docs.oracle.com/javase/8/docs/api/");
+	options.windowTitle = "fix4j API ${version}"
+	options.overview = "src/main/java/overview.html";
+}
+
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives javadocJar, sourcesJar
+}
+
+gradle.taskGraph.whenReady { graph -> if (graph.hasTask(uploadArchives)) {
+
+    allprojects {
+        apply plugin: 'signing'
+        apply plugin: 'maven'
+		apply plugin: 'io.codearte.nexus-staging'
+		
+        // Signature of artifacts
+        signing {
+            sign configurations.archives
+        }
+
+        // OSSRH publication
+        uploadArchives {
+            repositories {
+            	mavenDeployer {
+            		beforeDeployment { 
+            			MavenDeployment deployment -> signing.signPom(deployment)
+            		}
+            		repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+            			authentication(userName: ossrhUsername, password: ossrhPassword)
+            		}
+            		snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+            			authentication(userName: ossrhUsername, password: ossrhPassword)
+            		}
+            		
+            		pom.project {
+						name 'fix4j'
+						packaging 'jar'
+						// optionally artifactId can be defined here 
+						description 'Java low latency zero garbage FIX engine'
+						url 'http://fix4j.org'
+
+        				scm {
+        					connection 'scm:git:git@github.com:tools4j/fix4j.git'
+        					developerConnection 'scm:git:git@github.com:tools4j/fix4j.git'
+        					url 'git@github.com:tools4j/fix4j.git'
+        				}
+        				licenses {
+        					license {
+        						name 'MIT License'
+        						url 'http://opensource.org/licenses/MIT'
+        					}
+        				}
+        				
+        				developers {
+        					developer {
+        						id 'terzerm'
+        						name 'Marco Terzer'
+        					}
+        					developer {
+        						id 'harukizaemon'
+        						name 'Simon Harris'
+        					}
+        				}
+        			}
+        		}
+            }
+        }
+
+		nexusStaging {
+		    username = ossrhUsername
+		    password = ossrhPassword
+		}
+    }
+}}
