@@ -23,59 +23,58 @@
  */
 package org.fix4j.engine.fix;
 
-import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 /**
- * User-defined custom message types
- * 
- * @author terz
- *
+ * User-defined custom message types.
  */
 public final class CustomMsgType implements MsgType {
 
-	private static final List<CustomMsgType> REGISTRY = new CopyOnWriteArrayList<>();
+	private static final Queue<CustomMsgType> REGISTRY = new ConcurrentLinkedQueue<>();
 
 	private final String name;
 	private final String tagValue;
+	private final int ordinal;
 
-	private CustomMsgType(final String name, final String tagValue) {
+	private CustomMsgType(final String name, final String tagValue, final int ordinal) {
 		this.name = Objects.requireNonNull(name, "name is null");
 		this.tagValue = Objects.requireNonNull(tagValue, "tagValue is null");
+		this.ordinal = ordinal;
 	}
 
-	public static final MsgType register(String name, String tagValue) {
-		final CustomMsgType msgType = new CustomMsgType(name, tagValue);
-		checkNonStandard(msgType);
-		REGISTRY.add(msgType);
+	public static final synchronized MsgType register(final String name, final String tagValue) {
+		checkNonStandard(name, tagValue);
 		final Predicate<CustomMsgType> matchNameOrType = (m) -> m.name.equals(name) || m.tagValue.equals(tagValue);
-		if (REGISTRY.stream().filter(matchNameOrType).count() > 1) {
-			final List<CustomMsgType> types = REGISTRY.stream().filter(matchNameOrType).collect(Collectors.toList());
-			REGISTRY.remove(msgType);
-			throw new IllegalArgumentException("Conflicting custom message type definitions: " + types);
+		final CustomMsgType msgType; 
+		final CustomMsgType existing;
+		synchronized(REGISTRY) {
+			msgType = new CustomMsgType(name, tagValue, FixMsgType.VALUES.size() + REGISTRY.size());
+			if (REGISTRY.stream().noneMatch(matchNameOrType)) {
+				REGISTRY.add(msgType);
+				return msgType;
+			}
+			existing = REGISTRY.stream().filter(matchNameOrType).findAny().get();
 		}
-		return msgType;
+		throw new IllegalArgumentException("Conflicting custom message type definitions: " + existing + ", " + msgType);
 	}
 
-	private static void checkNonStandard(CustomMsgType msgType) {
-		MsgType standard = FixMsgType.parse(msgType.get());
+	private static void checkNonStandard(final String name, final String tagValue) {
+		MsgType standard = FixMsgType.parse(tagValue);
 		if (standard != null) {
-			throw new IllegalArgumentException(
-					"Tag value of custom message type definition conflicts with standard FIX message type: custom="
-							+ msgType + ", standard=" + standard);
+			throw new IllegalArgumentException("Tag value '" + tagValue
+					+ "' of custom message type definition conflicts with standard FIX message type: " + standard);
 		}
 		try {
-			standard = FixMsgType.valueOf(msgType.name());
+			standard = FixMsgType.valueOf(name);
 		} catch (IllegalArgumentException e) {
 			// as expected
 			return;
 		}
-		throw new IllegalArgumentException(
-				"Name of custom message type definition conflicts with standard FIX message type: custom=" + msgType
-						+ ", standard=" + standard);
+		throw new IllegalArgumentException("Name '" + name
+				+ "' of custom message type definition conflicts with standard FIX message type: " + standard);
 	}
 
 	public static final void unregisterAll() {
@@ -109,6 +108,11 @@ public final class CustomMsgType implements MsgType {
 	@Override
 	public String get() {
 		return tagValue;
+	}
+	
+	@Override
+	public int ordinal() {
+		return ordinal;
 	}
 
 	@Override

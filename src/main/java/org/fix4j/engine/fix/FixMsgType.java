@@ -23,6 +23,9 @@
  */
 package org.fix4j.engine.fix;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
 
@@ -151,7 +154,12 @@ public enum FixMsgType implements MsgType, Supplier<String> {
 	
 	private final String tagValue;
 	
-	private static final FixMsgType[] VALUES = values();
+	/**
+	 * All standard FIX MsgType constants in an unmodifiable list. Similar to {@link #values()} but without
+	 * creating new instances for every invocation.
+	 */
+	public static final List<FixMsgType> VALUES = Collections.unmodifiableList(Arrays.asList(values()));
+
 	private static final FixMsgType[][] LOOKUP = initLookup();//lookup by first letter, then by second
 	private static final char LOOKUP_MAX_LEADING = 'C';//Cx but no Dx
 	private static final char LOOKUP_MAX_TRAILING = 'G';//CG but no CH

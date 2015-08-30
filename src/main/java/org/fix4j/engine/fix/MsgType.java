@@ -29,6 +29,7 @@ public interface MsgType extends FixTag, Supplier<String> {
 	
 	String name();
 	boolean isCustom();
+	int ordinal();
 	
 	static MsgType parse(CharSequence tagValue) {
 		final MsgType msgType = FixMsgType.parse(tagValue);

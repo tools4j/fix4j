@@ -23,6 +23,7 @@
  */
 package org.fix4j.engine.fix;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 
 import org.junit.After;
@@ -53,6 +54,8 @@ public class MsgTypeTest {
 		final MsgType parsed2 = MsgType.parse("U2");
 		assertSame("should be same constant", customType1, parsed1);
 		assertSame("should be same constant", customType2, parsed2);
+		assertEquals("should have ordinal", FixMsgType.VALUES.size(), parsed1.ordinal());
+		assertEquals("should have ordinal", FixMsgType.VALUES.size() + 1, parsed2.ordinal());
 	}
 	@Test(expected = IllegalArgumentException.class)
 	public void shouldRejectCustomMsgTypeWithDuplicateName() {
