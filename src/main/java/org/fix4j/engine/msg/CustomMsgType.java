@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.fix4j.engine.fix;
+package org.fix4j.engine.msg;
 
 import java.util.Objects;
 import java.util.Queue;
@@ -101,7 +101,7 @@ public final class CustomMsgType implements MsgType {
 	}
 
 	@Override
-	public int getTag() {
+	public int tag() {
 		return MsgType;
 	}
 

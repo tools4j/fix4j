@@ -26,6 +26,9 @@ package org.fix4j.engine.fix;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 
+import org.fix4j.engine.msg.CustomMsgType;
+import org.fix4j.engine.msg.FixMsgType;
+import org.fix4j.engine.msg.MsgType;
 import org.junit.After;
 import org.junit.Test;
 

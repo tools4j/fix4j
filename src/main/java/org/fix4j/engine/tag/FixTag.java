@@ -21,13 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.fix4j.engine.fix;
+package org.fix4j.engine.tag;
 
 /**
  * Interface and definition of field tags.
  */
 public interface FixTag {
-	int getTag();
+	int tag();
+	
+	void dispatch(CharSequence value, TagValueConsumer consumer);
 
 	int Account = 1;
 	int AdvId = 2;

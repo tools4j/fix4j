@@ -21,43 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.fix4j.engine.fix;
+package org.fix4j.engine.tag;
 
-import static org.junit.Assert.assertSame;
+import java.io.IOException;
 
-import org.fix4j.engine.msg.FixVersion;
-import org.junit.Test;
-
-/**
- * Unit test for {@link FixVersion}.
- */
-public class FixVersionTest {
-
-	@Test
-	public void shouldParse() {
-		for (final FixVersion fixVersion : FixVersion.values()) {
-			final FixVersion parsed = FixVersion.parse(fixVersion.getBeginString());
-			assertSame("should be same constant", fixVersion, parsed);
-		}
+public interface LongTag extends FixTag {
+	default long convertFrom(CharSequence value, int start, int end) {
+		return Long.parseLong(value.subSequence(start, end).toString());//FIXME make this garbage free
 	}
-	@Test(expected = NullPointerException.class)
-	public void parseShouldThrowExceptionForNullFixVersion() {
-		FixVersion.parse(null);
-	}
-	@Test(expected = IllegalArgumentException.class)
-	public void parseShouldThrowExceptionForEmptyFixVersion() {
-		FixVersion.parse("");
-	}
-	@Test(expected = IllegalArgumentException.class)
-	public void parseShouldThrowExceptionForInvalidFixVersion() {
-		FixVersion.parse("FIX 4.0");
-	}
-	@Test(expected = IllegalArgumentException.class)
-	public void parseShouldThrowExceptionForInvalidFixVersion5() {
-		FixVersion.parse("FIX.5.0");
-	}
-	@Test(expected = IllegalArgumentException.class)
-	public void parseShouldThrowExceptionForFixVersionWithSP() {
-		FixVersion.parse("FIXT.1.1.SP1");
+	default void convertTo(long value, Appendable destination) throws IOException {
+		destination.append(String.valueOf(value));//FIXME make this garbage free
 	}
 }
