@@ -23,201 +23,22 @@
  */
 package org.fix4j.engine.fix;
 
-import java.util.Objects;
+import java.util.function.Supplier;
 
-/**
- * MsgType constants for all fix versions.
- */
-public enum MsgType {
-	Heartbeat("0"),
-	TestRequest("1"),
-	ResendRequest("2"),
-	Reject("3"),
-	SequenceReset("4"),
-	Logout("5"),
-	IOI("6"),
-	Advertisement("7"),
-	ExecutionReport("8"),
-	OrderCancelReject("9"),
-	Logon("A"),
-	DerivativeSecurityList("AA"),
-	NewOrderMultileg("AB"),
-	MultilegOrderCancelReplace("AC"),
-	TradeCaptureReportRequest("AD"),
-	TradeCaptureReport("AE"),
-	OrderMassStatusRequest("AF"),
-	QuoteRequestReject("AG"),
-	RFQRequest("AH"),
-	QuoteStatusReport("AI"),
-	QuoteResponse("AJ"),
-	Confirmation("AK"),
-	PositionMaintenanceRequest("AL"),
-	PositionMaintenanceReport("AM"),
-	RequestForPositions("AN"),
-	RequestForPositionsAck("AO"),
-	PositionReport("AP"),
-	TradeCaptureReportRequestAck("AQ"),
-	TradeCaptureReportAck("AR"),
-	AllocationReport("AS"),
-	AllocationReportAck("AT"),
-	Confirmation_Ack("AU"),
-	SettlementInstructionRequest("AV"),
-	AssignmentReport("AW"),
-	CollateralRequest("AX"),
-	CollateralAssignment("AY"),
-	CollateralResponse("AZ"),
-	News("B"),
-	CollateralReport("BA"),
-	CollateralInquiry("BB"),
-	NetworkCounterpartySystemStatusRequest("BC"),
-	NetworkCounterpartySystemStatusResponse("BD"),
-	UserRequest("BE"),
-	UserResponse("BF"),
-	CollateralInquiryAck("BG"),
-	ConfirmationRequest("BH"),
-	TradingSessionListRequest("BI"),
-	TradingSessionList("BJ"),
-	SecurityListUpdateReport("BK"),
-	AdjustedPositionReport("BL"),
-	AllocationInstructionAlert("BM"),
-	ExecutionAcknowledgement("BN"),
-	ContraryIntentionReport("BO"),
-	SecurityDefinitionUpdateReport("BP"),
-	SettlementObligationReport("BQ"),
-	DerivativeSecurityListUpdateReport("BR"),
-	TradingSessionListUpdateReport("BS"),
-	MarketDefinitionRequest("BT"),
-	MarketDefinition("BU"),
-	MarketDefinitionUpdateReport("BV"),
-	ApplicationMessageRequest("BW"),
-	ApplicationMessageRequestAck("BX"),
-	ApplicationMessageReport("BY"),
-	OrderMassActionReport("BZ"),
-	Email("C"),
-	OrderMassActionRequest("CA"),
-	UserNotification("CB"),
-	StreamAssignmentRequest("CC"),
-	StreamAssignmentReport("CD"),
-	StreamAssignmentReportACK("CE"),
-	PartyDetailsListRequest("CF"),
-	PartyDetailsListReport("CG"),
-	NewOrderSingle("D"),
-	NewOrderList("E"),
-	OrderCancelRequest("F"),
-	OrderCancelReplaceRequest("G"),
-	OrderStatusRequest("H"),
-	AllocationInstruction("J"),
-	ListCancelRequest("K"),
-	ListExecute("L"),
-	ListStatusRequest("M"),
-	ListStatus("N"),
-	AllocationInstructionAck("P"),
-	DontKnowTradeDK("Q"),
-	QuoteRequest("R"),
-	Quote("S"),
-	SettlementInstructions("T"),
-	MarketDataRequest("V"),
-	MarketDataSnapshotFullRefresh("W"),
-	MarketDataIncrementalRefresh("X"),
-	MarketDataRequestReject("Y"),
-	QuoteCancel("Z"),
-	QuoteStatusRequest("a"),
-	MassQuoteAcknowledgement("b"),
-	SecurityDefinitionRequest("c"),
-	SecurityDefinition("d"),
-	SecurityStatusRequest("e"),
-	SecurityStatus("f"),
-	TradingSessionStatusRequest("g"),
-	TradingSessionStatus("h"),
-	MassQuote("i"),
-	BusinessMessageReject("j"),
-	BidRequest("k"),
-	BidResponse("l"),
-	ListStrikePrice("m"),
-	XML_non_FIX("n"),
-	RegistrationInstructions("o"),
-	RegistrationInstructionsResponse("p"),
-	OrderMassCancelRequest("q"),
-	OrderMassCancelReport("r"),
-	NewOrderCross("s"),
-	CrossOrderCancelReplaceRequest("t"),
-	CrossOrderCancelRequest("u"),
-	SecurityTypeRequest("v"),
-	SecurityTypes("w"),
-	SecurityListRequest("x"),
-	SecurityList("y"),
-	DerivativeSecurityListRequest("z");
+public interface MsgType extends FixTag, Supplier<String> {
 	
-	private final String msgType;
+	String name();
+	boolean isCustom();
 	
-	private static final MsgType[] VALUES = values();
-	private static final MsgType[][] LOOKUP = initLookup();//lookup by first letter, then by second
-	private static final char LOOKUP_MAX_LEADING = 'C';//Cx but no Dx
-	private static final char LOOKUP_MAX_TRAILING = 'G';//CG but no CH
-	
-	private MsgType(final String msgType) {
-		this.msgType = Objects.requireNonNull(msgType, "msgType is null");
-	}
-	public String getMsgType() {
-		return msgType;
-	}
-	
-	public static MsgType parse(final CharSequence msgType) {
-		final int i = lookupIndex0(msgType);
-		final int j = lookupIndex1(msgType);
-		return LOOKUP[i][j];
-	}
-	
-	private static MsgType[][] initLookup() {
-		final MsgType[][] types = new MsgType['C'-'A'+2][];
-		types[0] = new MsgType['9'-'0'+1+'Z'-'A'+1+'z'-'a'+1];//x
-		for (int i = 1; i <= LOOKUP_MAX_LEADING - 'A'; i++) {
-			types[i] = new MsgType['Z'-'A'+1];//Ax, Bx, ...
+	static MsgType parse(CharSequence tagValue) {
+		final MsgType msgType = FixMsgType.parse(tagValue);
+		if (msgType != null) {
+			return msgType;
 		}
-		types[LOOKUP_MAX_LEADING-'A'+1] = new MsgType[LOOKUP_MAX_TRAILING-'A'+1];//Cx
-		for (final MsgType value : VALUES) {
-			final String msgType = value.getMsgType();
-			final int i = lookupIndex0(msgType);
-			final int j = lookupIndex1(msgType);
-			types[i][j] = value;
+		final MsgType customMsgType = CustomMsgType.parse(tagValue);
+		if (customMsgType != null) {
+			return customMsgType;
 		}
-		return types;
-	}
-	private static final int lookupIndex0(final CharSequence msgType) {
-		final int len = msgType.length();
-		if (len == 1) {
-			return 0;
-		}
-		if (len == 2) {
-			final char ch = msgType.charAt(0);
-			if (ch >= 'A' & ch <= LOOKUP_MAX_LEADING) {
-				return ch - 'A' + 1;
-			}
-			//else throw exception below
-		}
-		throw new IllegalArgumentException("Not a valid msgType value: " + msgType);
-	}
-	private static final int lookupIndex1(final CharSequence msgType) {
-		final int len = msgType.length();
-		if (len == 1) {
-			final char ch = msgType.charAt(0);
-			if (ch >= '0' & ch <= '9') {
-				return ch - '0';
-			} else if (ch >= 'A' & ch <= 'Z') {
-				return '9' - '0' + 1 + ch - 'A';
-			} else if (ch >= 'a' & ch <= 'z') {
-				return '9' - '0' + 1 + 'Z' - 'A' + 1 + ch - 'a';
-			}
-			//else throw exception below
-		} else if (len == 2) {
-			final char ch = msgType.charAt(1);
-			if (ch >= 'A' & ch <= 'Z') {
-				if (ch <= LOOKUP_MAX_TRAILING || msgType.charAt(0) < LOOKUP_MAX_LEADING) {
-					return ch - 'A';
-				}
-			}
-			//else throw exception below
-		}
-		throw new IllegalArgumentException("Not a valid msgType value: " + msgType);
+		throw new IllegalArgumentException("Not a valid message type: " + tagValue);
 	}
 }

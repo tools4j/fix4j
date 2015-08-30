@@ -25,19 +25,52 @@ package org.fix4j.engine.fix;
 
 import static org.junit.Assert.assertSame;
 
+import org.junit.After;
 import org.junit.Test;
 
 /**
  * Unit test for {@link MsgType}.
  */
 public class MsgTypeTest {
+	
+	@After
+	public void afterEach() {
+		CustomMsgType.unregisterAll();
+	}
 
 	@Test
 	public void shouldParse() {
-		for (final MsgType msgType : MsgType.values()) {
-			final MsgType parsed = MsgType.parse(msgType.getMsgType());
-			assertSame("should be same constant", msgType, parsed);
+		for (final MsgType fixMsgType : FixMsgType.values()) {
+			final MsgType parsed = MsgType.parse(fixMsgType.get());
+			assertSame("should be same constant", fixMsgType, parsed);
 		}
+	}
+	@Test
+	public void shouldParseCustomMsgType() {
+		final MsgType customType1 = CustomMsgType.register("CustomMsgType1", "U1");
+		final MsgType customType2 = CustomMsgType.register("CustomMsgType2", "U2");
+		final MsgType parsed1 = MsgType.parse("U1");
+		final MsgType parsed2 = MsgType.parse("U2");
+		assertSame("should be same constant", customType1, parsed1);
+		assertSame("should be same constant", customType2, parsed2);
+	}
+	@Test(expected = IllegalArgumentException.class)
+	public void shouldRejectCustomMsgTypeWithDuplicateName() {
+		CustomMsgType.register("CustomMsgType", "U1");
+		CustomMsgType.register("CustomMsgType", "U2");
+	}
+	@Test(expected = IllegalArgumentException.class)
+	public void shouldRejectCustomMsgTypeWithDuplicateTagValue() {
+		CustomMsgType.register("CustomMsgType1", "U1");
+		CustomMsgType.register("CustomMsgType2", "U1");
+	}
+	@Test(expected = IllegalArgumentException.class)
+	public void shouldRejectCustomMsgTypeWithStandardName() {
+		CustomMsgType.register("NewOrderSingle", "U1");
+	}
+	@Test(expected = IllegalArgumentException.class)
+	public void shouldRejectCustomMsgTypeWithStandardTagValue() {
+		CustomMsgType.register("CustomMsgType1", "A");
 	}
 	@Test(expected = NullPointerException.class)
 	public void parseShouldThrowExceptionForNullMsgType() {

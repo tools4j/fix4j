@@ -34,7 +34,7 @@ public enum FixVersion {
 	FIX_4_2("FIX.4.2"), //
 	FIX_4_3("FIX.4.3"), //
 	FIX_4_4("FIX.4.4"), //
-	FIX_5_0("FIXT.1.1");
+	FIX_5_0("FIXT.1.1");//FIXME 5.0 has no begin-string
 
 	private final String beginString;
 
