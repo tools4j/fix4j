@@ -24,6 +24,9 @@
 package org.fix4j.engine.tag;
 
 import java.io.IOException;
+import java.math.RoundingMode;
+
+import org.decimal4j.scale.Scale0f;
 
 public interface IntTag extends FixTag {
 	@Override
@@ -31,9 +34,11 @@ public interface IntTag extends FixTag {
 		consumer.accept(this, convertFrom(value, 0, value.length()));
 	}
 	default int convertFrom(CharSequence value, int start, int end) {
-		return Integer.parseInt(value.subSequence(start, end).toString());//FIXME make this garbage free
+		final long iValue = Scale0f.INSTANCE.getCheckedArithmetic(RoundingMode.UNNECESSARY).parse(value, start, end);
+		if (Integer.MIN_VALUE <= iValue & iValue <= Integer.MAX_VALUE) return (int)iValue;
+		throw new IllegalArgumentException("value out of range for tag " + tag() + ": " + iValue);
 	}
 	default void convertTo(int value, Appendable destination) throws IOException {
-		destination.append(String.valueOf(value));//FIXME make this garbage free
+		Scale0f.INSTANCE.getDefaultArithmetic().toString(value, destination);
 	}
 }

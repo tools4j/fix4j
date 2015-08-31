@@ -24,6 +24,9 @@
 package org.fix4j.engine.tag;
 
 import java.io.IOException;
+import java.math.RoundingMode;
+
+import org.decimal4j.scale.Scale0f;
 
 public interface LongTag extends FixTag {
 	@Override
@@ -31,9 +34,9 @@ public interface LongTag extends FixTag {
 		consumer.accept(this, convertFrom(value, 0, value.length()));
 	}
 	default long convertFrom(CharSequence value, int start, int end) {
-		return Long.parseLong(value.subSequence(start, end).toString());//FIXME make this garbage free
+		return Scale0f.INSTANCE.getCheckedArithmetic(RoundingMode.UNNECESSARY).parse(value, start, end);
 	}
 	default void convertTo(long value, Appendable destination) throws IOException {
-		destination.append(String.valueOf(value));//FIXME make this garbage free
+		Scale0f.INSTANCE.getDefaultArithmetic().toString(value, destination);
 	}
 }
