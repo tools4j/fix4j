@@ -43,6 +43,6 @@ public final class NullMessage<T extends MessageType> implements Message<T> {
     }
 
     @Override
-    public void copy(final int tag, final Message from) {
+    public void copy(final int tag, final Message<T> from) {
     }
 }

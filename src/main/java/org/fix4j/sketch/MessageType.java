@@ -1,5 +1,5 @@
 package org.fix4j.sketch;
 
-public interface MessageType<T extends Enum> {
+public interface MessageType {
     String tagValue();
 }

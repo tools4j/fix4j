@@ -19,5 +19,5 @@ public interface Message<T extends MessageType> {
     void set(int tag, String value);
     void set(int tag, Supplier<String> supplier);
 
-    void copy(int tag, Message from);
+    void copy(int tag, Message<T> from);
 }
