@@ -24,23 +24,30 @@
 package org.fix4j.sketch;
 
 import java.util.function.Consumer;
+import java.util.function.IntConsumer;
+import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
 public interface Message<T extends MessageType> {
     T messageType();
 
-    boolean isSet(int tag);
+    boolean isSet(FieldType fieldType);
 
-    // I'm guessing at a minimum we need data types of:
-    //      Char, String, int, long, boolean, "date" (as a long perhaps?)
-    // Do we add get/set for each of these? That's a lot of methods :-O
-    // Do we use generics on Tag? if so, won't that create a lot of boxing?
+    void unset(FieldType fieldType);
 
-    String get(int tag);
-    void get(int tag, Consumer<String> consumer);
+    void set(StringFieldType tag, String value);
 
-    void set(int tag, String value);
-    void set(int tag, Supplier<String> supplier);
+    void set(StringFieldType tag, Supplier<String> supplier);
 
-    void copy(int tag, Message<T> from);
+    String get(StringFieldType tag);
+
+    void get(StringFieldType tag, Consumer<String> consumer);
+
+    void set(IntFieldType tag, int value);
+
+    void set(IntFieldType tag, IntSupplier supplier);
+
+    int get(IntFieldType tag);
+
+    void get(IntFieldType tag, IntConsumer consumer);
 }

@@ -152,7 +152,7 @@ public enum Fix42MessageType implements MessageType {
     }
 
     @Override
-    public String tagValue() {
+    public String fieldValue() {
         return tagValue;
     }
 }
