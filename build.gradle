@@ -20,6 +20,9 @@ jar {
 
 repositories {
     mavenCentral()
+    maven {
+        url "https://oss.sonatype.org/content/repositories/snapshots/"
+    }
 }
 
 buildscript {
@@ -34,7 +37,13 @@ buildscript {
 	}
 }
 
+configurations.all {
+    // check for updates every build
+    //resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
 dependencies {
+	compile group: "org.decimal4j", name: "decimal4j", version: "1.0.1-SNAPSHOT", changing: true
     testCompile 'junit:junit:4.11'
 }
 

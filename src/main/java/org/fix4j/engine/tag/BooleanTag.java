@@ -21,29 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.fix4j.sketch;
+package org.fix4j.engine.tag;
 
-import java.util.Objects;
+import java.io.IOException;
 
-public final class Dictionary<T extends MessageType> {
-    private final Class<T> klass;
-    private final T heartbeatMessageType;
-
-    public static <T extends MessageType> Dictionary<T> of(final Class<T> klass) {
-        for (final T messageType : klass.getEnumConstants()) {
-            if ("0".equals(messageType.tagValue())) {
-                return new Dictionary<>(klass, messageType);
-            }
-        }
-        throw new IllegalArgumentException("MessageType doesn't define a heartbeat");
-    }
-
-    private Dictionary(final Class<T> klass, final T heartbeatMessageType) {
-        this.klass = klass;
-        this.heartbeatMessageType = Objects.requireNonNull(heartbeatMessageType);
-    }
-
-    public Message<T> parse(final String fix) {
-        return NullMessage.of(heartbeatMessageType);
-    }
+public interface BooleanTag extends FixTag {
+	@Override
+	default void dispatch(CharSequence value, TagValueConsumer consumer) {
+		consumer.accept(this, convertFrom(value, 0, value.length()));
+	}
+	default boolean convertFrom(CharSequence value, int start, int end) {
+		return 'Y' == value.charAt(start);
+	}
+	default void convertTo(boolean value, Appendable destination) throws IOException {
+		destination.append(value ? 'Y' : 'N');
+	}
 }

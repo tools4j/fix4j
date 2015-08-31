@@ -26,6 +26,10 @@ package org.fix4j.engine.tag;
 import java.io.IOException;
 
 public interface DoubleTag extends FixTag {
+	@Override
+	default void dispatch(CharSequence value, TagValueConsumer consumer) {
+		consumer.accept(this, convertFrom(value, 0, value.length()));
+	}
 	default double convertFrom(CharSequence value, int start, int end) {
 		return Double.parseDouble(value.subSequence(start, end).toString());//FIXME make this garbage free
 	}

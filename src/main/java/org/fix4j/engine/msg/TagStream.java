@@ -37,4 +37,20 @@ public interface TagStream {
 	 *             if the specified consumer is null
 	 */
 	boolean tryNextTag(TagValueConsumer consumer);
+
+	/**
+	 * For each remaining tag, passed the tag with the associated value to the given consumer, sequentially until all
+	 * tags have been processed or the consumer throws an exception.
+	 * <p>
+	 * The default implementation repeatedly invokes {@link #tryNextTag} until it returns {@code false}.
+	 *
+	 * @param consumer
+	 *            The consumer for the tag/value pairs found
+	 * @throws NullPointerException
+	 *             if the specified consumer is null
+	 */
+	default void forEachRemainingTag(TagValueConsumer consumer) {
+		do {
+		} while (tryNextTag(consumer));
+	}
 }

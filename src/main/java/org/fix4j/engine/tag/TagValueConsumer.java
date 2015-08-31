@@ -24,8 +24,11 @@
 package org.fix4j.engine.tag;
 
 public interface TagValueConsumer {
+	void accept(BooleanTag tag, boolean value);
+	void accept(CharTag tag, char value);
 	void accept(IntTag tag, int value);
 	void accept(LongTag tag, long value);
 	void accept(DoubleTag tag, double value);
+	void accept(DecimalTag tag, double value);
 	void accept(FixTag tag, CharSequence value);
 }

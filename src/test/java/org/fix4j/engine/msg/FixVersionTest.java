@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.fix4j.engine.fix;
+package org.fix4j.engine.msg;
 
 import static org.junit.Assert.assertSame;
 
