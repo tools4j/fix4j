@@ -35,7 +35,7 @@ public final class SimpleDictionary<T extends MessageType> implements Dictionary
         return new SimpleDictionary<>();
     }
 
-    public static <T extends MessageType, F extends FieldType> SimpleDictionary<T> define(final Consumer<Dictionary<T>> consumer) {
+    public static <T extends MessageType, F extends Tag> SimpleDictionary<T> define(final Consumer<Dictionary<T>> consumer) {
         final SimpleDictionary<T> dictionary = new SimpleDictionary<>();
         consumer.accept(dictionary);
         return dictionary;

@@ -26,9 +26,9 @@ package org.fix4j.sketch;
 import java.util.function.Consumer;
 
 public interface MessageDefinition<T extends MessageType> {
-    FieldDefinition defineField(FieldType fieldType);
+    FieldDefinition defineField(Tag tag);
 
-    FieldDefinition defineField(FieldType fieldType, Consumer<FieldDefinition> consumer);
+    FieldDefinition defineField(Tag tag, Consumer<FieldDefinition> consumer);
 
     Message<T> createMessage();
 

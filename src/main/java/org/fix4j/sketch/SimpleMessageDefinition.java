@@ -29,7 +29,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 public final class SimpleMessageDefinition<T extends MessageType> implements MessageDefinition<T> {
-    private final Map<FieldType, SimpleFieldDefinition> fieldDefinitions = new HashMap<>();
+    private final Map<Tag, SimpleFieldDefinition> fieldDefinitions = new HashMap<>();
     private final T messageType;
 
     public SimpleMessageDefinition(final T messageType) {
@@ -37,14 +37,14 @@ public final class SimpleMessageDefinition<T extends MessageType> implements Mes
     }
 
     @Override
-    public SimpleFieldDefinition defineField(final FieldType fieldType) {
-        Objects.requireNonNull(fieldType);
-        return fieldDefinitions.computeIfAbsent(fieldType, SimpleFieldDefinition::new);
+    public SimpleFieldDefinition defineField(final Tag tag) {
+        Objects.requireNonNull(tag);
+        return fieldDefinitions.computeIfAbsent(tag, SimpleFieldDefinition::new);
     }
 
     @Override
-    public SimpleFieldDefinition defineField(final FieldType fieldType, final Consumer<FieldDefinition> consumer) {
-        final SimpleFieldDefinition fieldDefinition = defineField(fieldType);
+    public SimpleFieldDefinition defineField(final Tag tag, final Consumer<FieldDefinition> consumer) {
+        final SimpleFieldDefinition fieldDefinition = defineField(tag);
         consumer.accept(fieldDefinition);
         return fieldDefinition;
     }

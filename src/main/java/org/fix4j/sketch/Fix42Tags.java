@@ -23,5 +23,11 @@
  */
 package org.fix4j.sketch;
 
-public interface FieldType {
+public final class Fix42Tags {
+    public static final IntTag MsgSeqNum = new IntTag(34);
+    public static final StringTag TestRequestID = new StringTag(112);
+
+    private Fix42Tags() {
+        throw new IllegalStateException("No org.fix4j.sketch.Fix42Tags for you!");
+    }
 }

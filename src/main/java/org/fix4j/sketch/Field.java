@@ -24,7 +24,7 @@
 package org.fix4j.sketch;
 
 public interface Field {
-    FieldType tag();
+    Tag tag();
 
     boolean isSet();
 }

@@ -27,20 +27,20 @@ public class Example {
     public static void main(final String[] args) {
         final Dictionary<Fix42MessageType> fix42Dictionary = SimpleDictionary.define(dictionary -> {
             dictionary.defineMessage(Fix42MessageType.Heartbeat, heartbeat -> {
-                heartbeat.defineField(Fix42FieldTypes.TestRequestID);
+                heartbeat.defineField(Fix42Tags.TestRequestID);
             });
 
             dictionary.defineMessage(Fix42MessageType.TestRequest, testRequest -> {
-                testRequest.defineField(Fix42FieldTypes.TestRequestID, FieldDefinition::setRequired);
+                testRequest.defineField(Fix42Tags.TestRequestID, FieldDefinition::setRequired);
             });
         });
 
         final Message<Fix42MessageType> testRequest = fix42Dictionary.createMessage(Fix42MessageType.TestRequest);
-        testRequest.set(Fix42FieldTypes.TestRequestID, "TEST");
+        testRequest.set(Fix42Tags.TestRequestID, "TEST");
 
         switch (testRequest.messageType()) {
             case TestRequest:
-                testRequest.get(Fix42FieldTypes.TestRequestID, System.out::println);
+                testRequest.get(Fix42Tags.TestRequestID, System.out::println);
                 break;
         }
    }

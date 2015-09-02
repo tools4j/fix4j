@@ -23,5 +23,7 @@
  */
 package org.fix4j.sketch;
 
-public final class StringFieldType implements FieldType {
+public final class StringTag implements Tag {
+    public StringTag(final int number) {
+    }
 }

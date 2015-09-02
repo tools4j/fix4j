@@ -31,23 +31,23 @@ import java.util.function.Supplier;
 public interface Message<T extends MessageType> {
     T messageType();
 
-    boolean isSet(FieldType fieldType);
+    boolean isSet(Tag tag);
 
-    void unset(FieldType fieldType);
+    void unset(Tag tag);
 
-    void set(StringFieldType tag, String value);
+    void set(StringTag tag, String value);
 
-    void set(StringFieldType tag, Supplier<String> supplier);
+    void set(StringTag tag, Supplier<String> supplier);
 
-    String get(StringFieldType tag);
+    String get(StringTag tag);
 
-    void get(StringFieldType tag, Consumer<String> consumer);
+    void get(StringTag tag, Consumer<String> consumer);
 
-    void set(IntFieldType tag, int value);
+    void set(IntTag tag, int value);
 
-    void set(IntFieldType tag, IntSupplier supplier);
+    void set(IntTag tag, IntSupplier supplier);
 
-    int get(IntFieldType tag);
+    int get(IntTag tag);
 
-    void get(IntFieldType tag, IntConsumer consumer);
+    void get(IntTag tag, IntConsumer consumer);
 }

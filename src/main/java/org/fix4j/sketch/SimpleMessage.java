@@ -44,52 +44,52 @@ public final class SimpleMessage<T extends MessageType> implements Message<T> {
     }
 
     @Override
-    public boolean isSet(final FieldType fieldType) {
+    public boolean isSet(final Tag tag) {
         return false;
     }
 
     @Override
-    public void unset(final FieldType fieldType) {
+    public void unset(final Tag tag) {
 
     }
 
     @Override
-    public void set(final StringFieldType tag, final String value) {
+    public void set(final StringTag tag, final String value) {
 
     }
 
     @Override
-    public void set(final StringFieldType tag, final Supplier<String> supplier) {
+    public void set(final StringTag tag, final Supplier<String> supplier) {
 
     }
 
     @Override
-    public String get(final StringFieldType tag) {
+    public String get(final StringTag tag) {
         return null;
     }
 
     @Override
-    public void get(final StringFieldType tag, final Consumer<String> consumer) {
+    public void get(final StringTag tag, final Consumer<String> consumer) {
 
     }
 
     @Override
-    public void set(final IntFieldType tag, final int value) {
+    public void set(final IntTag tag, final int value) {
 
     }
 
     @Override
-    public void set(final IntFieldType tag, final IntSupplier supplier) {
+    public void set(final IntTag tag, final IntSupplier supplier) {
 
     }
 
     @Override
-    public int get(final IntFieldType tag) {
+    public int get(final IntTag tag) {
         return 0;
     }
 
     @Override
-    public void get(final IntFieldType tag, final IntConsumer consumer) {
+    public void get(final IntTag tag, final IntConsumer consumer) {
 
     }
 }

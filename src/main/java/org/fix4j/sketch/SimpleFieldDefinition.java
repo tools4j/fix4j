@@ -26,10 +26,10 @@ package org.fix4j.sketch;
 import java.util.Objects;
 
 public final class SimpleFieldDefinition implements FieldDefinition {
-    private final FieldType fieldType;
+    private final Tag tag;
 
-    public SimpleFieldDefinition(final FieldType fieldType) {
-        this.fieldType = Objects.requireNonNull(fieldType);
+    public SimpleFieldDefinition(final Tag tag) {
+        this.tag = Objects.requireNonNull(tag);
     }
 
     @Override
