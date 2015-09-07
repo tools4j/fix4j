@@ -29,6 +29,6 @@ public interface TagValueConsumer {
 	void accept(IntTag tag, int value);
 	void accept(LongTag tag, long value);
 	void accept(DoubleTag tag, double value);
-	void accept(DecimalTag tag, double value);
+	void accept(DecimalTag tag, long value);
 	void accept(FixTag tag, CharSequence value);
 }
