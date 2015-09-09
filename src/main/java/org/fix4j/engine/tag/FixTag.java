@@ -27,6 +27,9 @@ package org.fix4j.engine.tag;
  * Interface and definition of field tags.
  */
 public interface FixTag {
+	default String name() {
+		return "tag(" + tag() + ")";
+	}
 	int tag();
 	
 	void dispatch(CharSequence value, TagValueConsumer consumer);

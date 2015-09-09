@@ -26,7 +26,7 @@ package org.fix4j.engine.tag;
 public interface ObjectTag<T> extends FixTag {
 	@Override
 	default void dispatch(CharSequence value, TagValueConsumer consumer) {
-		consumer.accept(this, value);
+		consumer.accept(this, convertFrom(value, 0, value.length()));
 	}
 	Class<T> valueType();
 	T convertFrom(CharSequence value, int start, int end);

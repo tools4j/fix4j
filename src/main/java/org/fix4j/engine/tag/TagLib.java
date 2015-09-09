@@ -23,14 +23,31 @@
  */
 package org.fix4j.engine.tag;
 
-public interface TagValueConsumer {
-	void accept(BooleanTag tag, boolean value);
-	void accept(CharTag tag, char value);
-	void accept(IntTag tag, int value);
-	void accept(LongTag tag, long value);
-	void accept(DoubleTag tag, double value);
-	void accept(DecimalTag tag, long value);
-	void accept(StringTag tag, CharSequence value);
-	<T> void accept(ObjectTag<T> tag, T value);
-	void accept(FixTag tag, CharSequence value);
+public class TagLib {
+	private final FixTag[] tags;
+	public TagLib() {
+		this(FixTag.RiskEncodedSecurityDesc);
+	}
+	public TagLib(int maxTag) {
+		this.tags = new FixTag[maxTag + 1];
+		for (int i = 1; i <= maxTag; i++) {
+			final int tag = i;
+			final StringTag stag = () -> tag;
+			tags[i] = stag;
+		}
+	}
+	
+	public final void registerTag(FixTag fixTag) {
+		if (fixTag.tag() < 1 || fixTag.tag() > tags.length) {
+			throw new IllegalArgumentException("Illegal tag: " + fixTag.tag());
+		}
+		tags[fixTag.tag()] = fixTag;
+	}
+	
+	public final FixTag get(int tag) {
+		if (tag < 1 || tag > tags.length) {
+			throw new IllegalArgumentException("Illegal tag: " + tag);
+		}
+		return tags[tag];
+	}
 }

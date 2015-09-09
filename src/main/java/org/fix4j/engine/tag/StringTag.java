@@ -23,14 +23,9 @@
  */
 package org.fix4j.engine.tag;
 
-public interface TagValueConsumer {
-	void accept(BooleanTag tag, boolean value);
-	void accept(CharTag tag, char value);
-	void accept(IntTag tag, int value);
-	void accept(LongTag tag, long value);
-	void accept(DoubleTag tag, double value);
-	void accept(DecimalTag tag, long value);
-	void accept(StringTag tag, CharSequence value);
-	<T> void accept(ObjectTag<T> tag, T value);
-	void accept(FixTag tag, CharSequence value);
+public interface StringTag extends FixTag {
+	@Override
+	default void dispatch(CharSequence value, TagValueConsumer consumer) {
+		consumer.accept(this, value);
+	}
 }
