@@ -21,16 +21,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.fix4j.engine.tag;
+package org.fix4j.engine.tag.impl;
 
-public interface TagValueConsumer {
-	void accept(BooleanTag tag, boolean value);
-	void accept(CharTag tag, char value);
-	void accept(IntTag tag, int value);
-	void accept(LongTag tag, long value);
-	void accept(DoubleTag tag, double value);
-	void accept(DecimalTag tag, long value);
-	void accept(StringTag tag, CharSequence value);
-	<T> void accept(ObjectTag<T> tag, T value);
-	void accept(FixTag tag, CharSequence value);
+import java.util.Objects;
+
+import org.decimal4j.api.DecimalArithmetic;
+import org.fix4j.engine.tag.DecimalTag;
+
+public class BasicDecimalTag extends AbstractFixTag implements DecimalTag {
+
+	private final DecimalArithmetic arithmetic;
+
+	public BasicDecimalTag(final int tag, final DecimalArithmetic arithmetic) {
+		super(tag);
+		this.arithmetic = Objects.requireNonNull(arithmetic, "arithmetic is null");
+	}
+	
+	public BasicDecimalTag(final String name, final int tag, final DecimalArithmetic arithmetic) {
+		super(name, tag);
+		this.arithmetic = Objects.requireNonNull(arithmetic, "arithmetic is null");
+	}
+	
+	@Override
+	public final DecimalArithmetic getArithmetic() {
+		return arithmetic;
+	}
+
 }

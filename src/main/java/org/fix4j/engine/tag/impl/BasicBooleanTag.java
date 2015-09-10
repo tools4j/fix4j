@@ -21,33 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.fix4j.engine.msg;
+package org.fix4j.engine.tag.impl;
 
-import java.util.function.Supplier;
+import org.fix4j.engine.tag.BooleanTag;
 
-import org.fix4j.engine.stream.TagValueConsumer;
-import org.fix4j.engine.tag.FixTag;
+public class BasicBooleanTag extends AbstractFixTag implements BooleanTag {
 
-public interface MsgType extends FixTag, Supplier<String> {
-	
-	String name();
-	boolean isCustom();
-	int ordinal();
-	
-	@Override
-	default void dispatch(final CharSequence value, final TagValueConsumer consumer) {
-		consumer.acceptOther(this, get());
+	public BasicBooleanTag(final int tag) {
+		super(tag);
 	}
 	
-	static MsgType parse(CharSequence tagValue) {
-		final MsgType msgType = FixMsgType.parse(tagValue);
-		if (msgType != null) {
-			return msgType;
-		}
-		final MsgType customMsgType = CustomMsgType.parse(tagValue);
-		if (customMsgType != null) {
-			return customMsgType;
-		}
-		throw new IllegalArgumentException("Not a valid message type: " + tagValue);
+	public BasicBooleanTag(final String name, final int tag) {
+		super(name, tag);
 	}
+
 }

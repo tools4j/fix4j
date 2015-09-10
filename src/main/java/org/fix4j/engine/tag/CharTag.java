@@ -25,13 +25,17 @@ package org.fix4j.engine.tag;
 
 import java.io.IOException;
 
+import org.fix4j.engine.exception.InvalidValueException;
+import org.fix4j.engine.stream.TagValueConsumer;
+import org.fix4j.engine.util.ParseUtil;
+
 public interface CharTag extends FixTag {
 	@Override
-	default void dispatch(CharSequence value, TagValueConsumer consumer) {
-		consumer.accept(this, convertFrom(value, 0, value.length()));
+	default void dispatch(CharSequence value, TagValueConsumer consumer) throws InvalidValueException {
+		consumer.acceptChar(this, convertFrom(value, 0, value.length()));
 	}
-	default char convertFrom(CharSequence value, int start, int end) {
-		return value.charAt(start);
+	default char convertFrom(CharSequence value, int start, int end) throws InvalidValueException {
+		return ParseUtil.parseChar(this, value, start, end);
 	}
 	default void convertTo(char value, Appendable destination) throws IOException {
 		destination.append(value);

@@ -21,33 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.fix4j.engine.msg;
+package org.fix4j.engine.exception;
 
-import java.util.function.Supplier;
+public class Fix4jException extends Exception {
+	private static final long serialVersionUID = 1L;
 
-import org.fix4j.engine.stream.TagValueConsumer;
-import org.fix4j.engine.tag.FixTag;
-
-public interface MsgType extends FixTag, Supplier<String> {
-	
-	String name();
-	boolean isCustom();
-	int ordinal();
-	
-	@Override
-	default void dispatch(final CharSequence value, final TagValueConsumer consumer) {
-		consumer.acceptOther(this, get());
-	}
-	
-	static MsgType parse(CharSequence tagValue) {
-		final MsgType msgType = FixMsgType.parse(tagValue);
-		if (msgType != null) {
-			return msgType;
-		}
-		final MsgType customMsgType = CustomMsgType.parse(tagValue);
-		if (customMsgType != null) {
-			return customMsgType;
-		}
-		throw new IllegalArgumentException("Not a valid message type: " + tagValue);
+	public Fix4jException(String message) {
+		super(message);
 	}
 }

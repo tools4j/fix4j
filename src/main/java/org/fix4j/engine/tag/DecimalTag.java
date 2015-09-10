@@ -26,6 +26,9 @@ package org.fix4j.engine.tag;
 import java.io.IOException;
 
 import org.decimal4j.api.DecimalArithmetic;
+import org.fix4j.engine.exception.InvalidValueException;
+import org.fix4j.engine.stream.TagValueConsumer;
+import org.fix4j.engine.util.ParseUtil;
 
 public interface DecimalTag extends FixTag {
 	
@@ -36,11 +39,11 @@ public interface DecimalTag extends FixTag {
 	DecimalArithmetic getArithmetic();
 
 	@Override
-	default void dispatch(CharSequence value, TagValueConsumer consumer) {
-		consumer.accept(this, convertFrom(value, 0, value.length()));
+	default void dispatch(CharSequence value, TagValueConsumer consumer) throws InvalidValueException {
+		consumer.acceptDecimal(this, convertFrom(value, 0, value.length()));
 	}
-	default long convertFrom(CharSequence value, int start, int end) {
-		return getArithmetic().parse(value, start, end);
+	default long convertFrom(CharSequence value, int start, int end) throws InvalidValueException {
+		return ParseUtil.parseDecimal(this, value, start, end);
 	}
 	default void convertTo(long value, Appendable destination) throws IOException {
 		getArithmetic().toString(value, destination);

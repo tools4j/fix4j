@@ -23,6 +23,9 @@
  */
 package org.fix4j.engine.tag;
 
+import org.fix4j.engine.exception.InvalidValueException;
+import org.fix4j.engine.stream.TagValueConsumer;
+
 /**
  * Interface and definition of field tags.
  */
@@ -32,7 +35,7 @@ public interface FixTag {
 	}
 	int tag();
 	
-	void dispatch(CharSequence value, TagValueConsumer consumer);
+	void dispatch(CharSequence value, TagValueConsumer consumer) throws InvalidValueException;
 
 	int Account = 1;
 	int AdvId = 2;

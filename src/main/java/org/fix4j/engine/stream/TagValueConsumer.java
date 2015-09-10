@@ -21,33 +21,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.fix4j.engine.msg;
+package org.fix4j.engine.stream;
 
-import java.util.function.Supplier;
-
-import org.fix4j.engine.stream.TagValueConsumer;
+import org.fix4j.engine.exception.InvalidValueException;
+import org.fix4j.engine.tag.BooleanTag;
+import org.fix4j.engine.tag.CharTag;
+import org.fix4j.engine.tag.DecimalTag;
+import org.fix4j.engine.tag.DoubleTag;
 import org.fix4j.engine.tag.FixTag;
+import org.fix4j.engine.tag.IntTag;
+import org.fix4j.engine.tag.LongTag;
+import org.fix4j.engine.tag.ObjectTag;
+import org.fix4j.engine.tag.StringTag;
 
-public interface MsgType extends FixTag, Supplier<String> {
+public interface TagValueConsumer {
+	void acceptBoolean(BooleanTag tag, boolean value);
+	void acceptChar(CharTag tag, char value);
+	void acceptInt(IntTag tag, int value);
+	void acceptLong(LongTag tag, long value);
+	void acceptDouble(DoubleTag tag, double value);
+	void acceptDecimal(DecimalTag tag, long value);
+	void acceptString(StringTag tag, CharSequence value);
+	<T> void acceptObject(ObjectTag<T> tag, T value);
+	void acceptOther(FixTag tag, CharSequence value);
 	
-	String name();
-	boolean isCustom();
-	int ordinal();
-	
-	@Override
-	default void dispatch(final CharSequence value, final TagValueConsumer consumer) {
-		consumer.acceptOther(this, get());
-	}
-	
-	static MsgType parse(CharSequence tagValue) {
-		final MsgType msgType = FixMsgType.parse(tagValue);
-		if (msgType != null) {
-			return msgType;
-		}
-		final MsgType customMsgType = CustomMsgType.parse(tagValue);
-		if (customMsgType != null) {
-			return customMsgType;
-		}
-		throw new IllegalArgumentException("Not a valid message type: " + tagValue);
+	default void invalidValue(FixTag tag, InvalidValueException exception) throws InvalidValueException {
+		throw exception;
 	}
 }

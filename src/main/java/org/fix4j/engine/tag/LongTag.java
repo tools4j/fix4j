@@ -24,19 +24,20 @@
 package org.fix4j.engine.tag;
 
 import java.io.IOException;
-import java.math.RoundingMode;
 
-import org.decimal4j.scale.Scale0f;
+import org.fix4j.engine.exception.InvalidValueException;
+import org.fix4j.engine.stream.TagValueConsumer;
+import org.fix4j.engine.util.ParseUtil;
 
 public interface LongTag extends FixTag {
 	@Override
-	default void dispatch(CharSequence value, TagValueConsumer consumer) {
-		consumer.accept(this, convertFrom(value, 0, value.length()));
+	default void dispatch(CharSequence value, TagValueConsumer consumer) throws InvalidValueException {
+		consumer.acceptLong(this, convertFrom(value, 0, value.length()));
 	}
-	default long convertFrom(CharSequence value, int start, int end) {
-		return Scale0f.INSTANCE.getCheckedArithmetic(RoundingMode.UNNECESSARY).parse(value, start, end);
+	default long convertFrom(CharSequence value, int start, int end) throws InvalidValueException {
+		return ParseUtil.parseLong(this, value, start, end);
 	}
 	default void convertTo(long value, Appendable destination) throws IOException {
-		Scale0f.INSTANCE.getDefaultArithmetic().toString(value, destination);
+		ParseUtil.LONG_ARITHMETIC.toString(value, destination);
 	}
 }

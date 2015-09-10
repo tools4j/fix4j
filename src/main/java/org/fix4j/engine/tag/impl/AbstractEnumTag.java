@@ -21,33 +21,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.fix4j.engine.msg;
+package org.fix4j.engine.tag.impl;
 
-import java.util.function.Supplier;
+import java.util.Objects;
 
-import org.fix4j.engine.stream.TagValueConsumer;
-import org.fix4j.engine.tag.FixTag;
+import org.fix4j.engine.tag.ObjectTag;
 
-public interface MsgType extends FixTag, Supplier<String> {
+abstract public class AbstractEnumTag<T extends Enum<T>> extends AbstractFixTag implements ObjectTag<T> {
 	
-	String name();
-	boolean isCustom();
-	int ordinal();
+	private final Class<T> enumType;
 	
-	@Override
-	default void dispatch(final CharSequence value, final TagValueConsumer consumer) {
-		consumer.acceptOther(this, get());
+	public AbstractEnumTag(final int tag, final Class<T> enumType) {
+		super(tag);
+		this.enumType = Objects.requireNonNull(enumType, "enumType is null");
+	}
+	public AbstractEnumTag(final String name, final int tag, final Class<T> enumType) {
+		super(name, tag);
+		this.enumType = Objects.requireNonNull(enumType, "enumType is null");
 	}
 	
-	static MsgType parse(CharSequence tagValue) {
-		final MsgType msgType = FixMsgType.parse(tagValue);
-		if (msgType != null) {
-			return msgType;
-		}
-		final MsgType customMsgType = CustomMsgType.parse(tagValue);
-		if (customMsgType != null) {
-			return customMsgType;
-		}
-		throw new IllegalArgumentException("Not a valid message type: " + tagValue);
+	@Override
+	public final Class<T> valueType() {
+		return enumType;
 	}
 }

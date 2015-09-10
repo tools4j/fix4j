@@ -25,13 +25,18 @@ package org.fix4j.engine.tag;
 
 import java.io.IOException;
 
+import org.fix4j.engine.exception.InvalidValueException;
+import org.fix4j.engine.stream.TagValueConsumer;
+import org.fix4j.engine.util.ParseUtil;
+
 public interface DoubleTag extends FixTag {
+	
 	@Override
-	default void dispatch(CharSequence value, TagValueConsumer consumer) {
-		consumer.accept(this, convertFrom(value, 0, value.length()));
+	default void dispatch(CharSequence value, TagValueConsumer consumer) throws InvalidValueException {
+		consumer.acceptDouble(this, convertFrom(value, 0, value.length()));
 	}
-	default double convertFrom(CharSequence value, int start, int end) {
-		return Double.parseDouble(value.subSequence(start, end).toString());//FIXME make this garbage free
+	default double convertFrom(CharSequence value, int start, int end) throws InvalidValueException {
+		return ParseUtil.parseDouble(this, value, start, end);
 	}
 	default void convertTo(double value, Appendable destination) throws IOException {
 		destination.append(String.valueOf(value));//FIXME make this garbage free

@@ -28,9 +28,11 @@ import java.util.function.IntPredicate;
 
 import org.decimal4j.api.DecimalArithmetic;
 import org.decimal4j.scale.Scale0f;
+import org.fix4j.engine.exception.InvalidValueException;
+import org.fix4j.engine.stream.TagStream;
+import org.fix4j.engine.stream.TagValueConsumer;
 import org.fix4j.engine.tag.FixTag;
 import org.fix4j.engine.tag.TagLib;
-import org.fix4j.engine.tag.TagValueConsumer;
 
 public class CharSequenceTagStream implements TagStream {
 	
@@ -45,13 +47,17 @@ public class CharSequenceTagStream implements TagStream {
 	}
 	
 	@Override
-	public boolean tryNextTagConditional(IntPredicate condition, TagValueConsumer consumer) {
+	public boolean tryNextMatchingTag(IntPredicate condition, TagValueConsumer consumer) throws InvalidValueException {
 		final int tag = readNextTag();
 		if (tag > 0) {
 			readNextValue();
 			if (condition.test(tag)) {
 				final FixTag fixTag = TAGLIB.get(tag);
-				fixTag.dispatch(token, consumer);
+				try {
+					fixTag.dispatch(token, consumer);
+				} catch (InvalidValueException e) {
+					consumer.invalidValue(fixTag, e);
+				}
 			}
 			//skip '\0'
 			token.end++;

@@ -21,33 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.fix4j.engine.msg;
+package org.fix4j.engine.tag.impl;
 
-import java.util.function.Supplier;
+import org.fix4j.engine.tag.CharTag;
 
-import org.fix4j.engine.stream.TagValueConsumer;
-import org.fix4j.engine.tag.FixTag;
+public class BasicCharTag extends AbstractFixTag implements CharTag {
 
-public interface MsgType extends FixTag, Supplier<String> {
-	
-	String name();
-	boolean isCustom();
-	int ordinal();
-	
-	@Override
-	default void dispatch(final CharSequence value, final TagValueConsumer consumer) {
-		consumer.acceptOther(this, get());
+	public BasicCharTag(final int tag) {
+		super(tag);
 	}
 	
-	static MsgType parse(CharSequence tagValue) {
-		final MsgType msgType = FixMsgType.parse(tagValue);
-		if (msgType != null) {
-			return msgType;
-		}
-		final MsgType customMsgType = CustomMsgType.parse(tagValue);
-		if (customMsgType != null) {
-			return customMsgType;
-		}
-		throw new IllegalArgumentException("Not a valid message type: " + tagValue);
+	public BasicCharTag(final String name, final int tag) {
+		super(name, tag);
 	}
+
 }

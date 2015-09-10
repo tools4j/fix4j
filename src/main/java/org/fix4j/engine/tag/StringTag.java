@@ -23,9 +23,11 @@
  */
 package org.fix4j.engine.tag;
 
+import org.fix4j.engine.stream.TagValueConsumer;
+
 public interface StringTag extends FixTag {
 	@Override
 	default void dispatch(CharSequence value, TagValueConsumer consumer) {
-		consumer.accept(this, value);
+		consumer.acceptString(this, value);
 	}
 }

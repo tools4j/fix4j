@@ -21,33 +21,43 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.fix4j.engine.msg;
+package org.fix4j.engine.exception;
 
-import java.util.function.Supplier;
+import java.util.Objects;
 
-import org.fix4j.engine.stream.TagValueConsumer;
 import org.fix4j.engine.tag.FixTag;
 
-public interface MsgType extends FixTag, Supplier<String> {
+public class InvalidValueException extends Fix4jException {
 	
-	String name();
-	boolean isCustom();
-	int ordinal();
+	private static final long serialVersionUID = 1L;
+
+	private final FixTag fixTag;
+	private final String value;
 	
-	@Override
-	default void dispatch(final CharSequence value, final TagValueConsumer consumer) {
-		consumer.acceptOther(this, get());
+	public InvalidValueException(final FixTag fixTag, final CharSequence seq, int start, int end) {
+		super(new StringBuilder(40)
+				.append("Invalid value for tag ")
+				.append(fixTag)
+				.append(": ")
+				.append(seq, start, end).toString());
+		this.fixTag = Objects.requireNonNull(fixTag, "fixTag is null");
+		this.value = seq.subSequence(start, end).toString();
+	}
+	public InvalidValueException(final FixTag fixTag, final CharSequence seq, int start, int end, Throwable cause) {
+		this(fixTag, seq, start, end);
+		initCause(cause);
+	}
+	public InvalidValueException(final FixTag fixTag, final String value) {
+		this(fixTag, value, 0, value.length());
+	}
+	public InvalidValueException(final FixTag fixTag, final String value, Throwable cause) {
+		this(fixTag, value, 0, value.length(), cause);
 	}
 	
-	static MsgType parse(CharSequence tagValue) {
-		final MsgType msgType = FixMsgType.parse(tagValue);
-		if (msgType != null) {
-			return msgType;
-		}
-		final MsgType customMsgType = CustomMsgType.parse(tagValue);
-		if (customMsgType != null) {
-			return customMsgType;
-		}
-		throw new IllegalArgumentException("Not a valid message type: " + tagValue);
+	public FixTag getFixTag() {
+		return fixTag;
+	}
+	public String getValue() {
+		return value;
 	}
 }

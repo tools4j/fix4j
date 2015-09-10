@@ -21,61 +21,58 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.fix4j.engine.tag;
+package org.fix4j.engine.tag.impl;
 
-import java.io.IOException;
 import java.util.Objects;
 
-import org.decimal4j.api.DecimalArithmetic;
-import org.decimal4j.scale.Scale0f;
+import org.fix4j.engine.tag.FixTag;
 
-public class EnumTag<T extends Enum<T>> implements ObjectTag<T> {
+abstract public class AbstractFixTag implements FixTag {
 	
-	private static final DecimalArithmetic INT_ARITH = Scale0f.INSTANCE.getRoundingUnnecessaryArithmetic();
-
 	private final String name;
 	private final int tag;
-	private final Class<T> enumType;
-	private final T[] universe;
-	
-	public EnumTag(final String name, final int tag, final Class<T> enumType) {
-		if (tag <= 0) throw new IllegalArgumentException("invalid tag: " + tag);
+
+	public AbstractFixTag(final int tag) {
+		this.name = getSimpleTagName() + "(" + tag + ")";
+		this.tag = validateTag(tag);
+	}
+	public AbstractFixTag(final String name, final int tag) {
 		this.name = Objects.requireNonNull(name, "name is null");
-		this.tag = tag;
-		this.enumType = Objects.requireNonNull(enumType, "enumType is null");
-		this.universe = enumType.getEnumConstants();
+		this.tag = validateTag(tag);
+	}
+	private String getSimpleTagName() {
+		final String name = getClass().getSimpleName();
+		return name.endsWith("Tag") ? name.substring(0, name.length() - 3) : name;
 	}
 	
-	@Override
-	public String name() {
-		return name;
-	}
-	
-	@Override
-	public int tag() {
-		return tag;
+	private static int validateTag(int tag) {
+		if (tag > 0) {
+			return tag;
+		}
+		throw new IllegalArgumentException("invalid tag: " + tag);
 	}
 
 	@Override
-	public Class<T> valueType() {
-		return enumType;
+	public final int tag() {
+		return tag;
 	}
 	
 	@Override
-	public T convertFrom(CharSequence value, int start, int end) {
-		final long ordinal = INT_ARITH.parse(value, start, end);
-		if (ordinal >= 0 & ordinal < universe.length) {
-			return universe[(int)ordinal];
-		}
-		throw new IllegalArgumentException("invalid ordinal value for enum tag " + tag() + " for enum " + enumType.getName());
+	public int hashCode() {
+		return tag;
 	}
 	
 	@Override
-	public void convertTo(T value, Appendable destination) {
-		try {
-			INT_ARITH.toString(value.ordinal(), destination);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
+	public boolean equals(Object obj) {
+		if (obj == this) return true;
+		if (obj instanceof FixTag) {
+			return tag == ((FixTag)obj).tag();
 		}
+		return false;
+	}
+
+	@Override
+	public String toString() {
+		return name;
 	}
 }
