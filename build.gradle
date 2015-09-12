@@ -32,9 +32,12 @@ buildscript {
 	}
 	
 	dependencies {
+		classpath 'net.sourceforge.fmpp:fmpp:0.9.15'
 		classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.11.0'
 		classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.5.3"
 	}
+
+	ant.taskdef(name: 'fmpp', classname:'fmpp.tools.AntTask', classpath: buildscript.configurations.classpath.asPath)
 }
 
 configurations.all {
@@ -55,6 +58,21 @@ uploadArchives {
     }
 }
 
+def generatedSources = "${buildDir}/generated-src"
+
+task generateSources() << {
+	println "Generating sources...."
+	ant.fmpp(
+		configuration: "src/main/resources/codegen/config.fmpp",
+		sourceRoot: "src/main/resources/codegen/templates",
+		outputRoot: generatedSources
+	)
+}
+	
+sourceSets.main.java {
+	srcDirs generatedSources, 'src/main/java'
+}
+
 license {
     header rootProject.file('src/main/resources/LICENSE.template')
     strictCheck true
@@ -62,7 +80,7 @@ license {
 	ext.year = Calendar.getInstance().get(Calendar.YEAR)
 }
 
-compileJava.dependsOn licenseFormat
+compileJava.dependsOn generateSources,licenseFormat
 
 javadoc {
 	options.showFromPackage()

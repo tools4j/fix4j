@@ -1,0 +1,19 @@
+data: {
+	components: {
+	}
+	datatypes: {
+	}
+	enums: {
+	}
+	fields: {
+		fix40: xml('../../fix_repository_2010_edition_20140507/FIX.4.0/Base/Fields.xml')
+		fix41: xml('../../fix_repository_2010_edition_20140507/FIX.4.1/Base/Fields.xml')
+		fix42: xml('../../fix_repository_2010_edition_20140507/FIX.4.2/Base/Fields.xml')
+		fix43: xml('../../fix_repository_2010_edition_20140507/FIX.4.3/Base/Fields.xml')
+		fix44: xml('../../fix_repository_2010_edition_20140507/FIX.4.4/Base/Fields.xml')
+	}
+	messages: {
+	}
+	msg-contents: {
+	}
+}
