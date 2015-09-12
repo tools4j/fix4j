@@ -1,4 +1,5 @@
 data: {
+	mappings: properties('../config/type-mappings.properties')
 	components: {
 	}
 	datatypes: {

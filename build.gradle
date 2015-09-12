@@ -63,7 +63,7 @@ def generatedSources = "${buildDir}/generated-src"
 task generateSources() << {
 	println "Generating sources...."
 	ant.fmpp(
-		configuration: "src/main/resources/codegen/config.fmpp",
+		configuration: "src/main/resources/codegen/config/config.fmpp",
 		sourceRoot: "src/main/resources/codegen/templates",
 		outputRoot: generatedSources
 	)
