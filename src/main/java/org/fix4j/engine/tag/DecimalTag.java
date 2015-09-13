@@ -38,6 +38,14 @@ public interface DecimalTag extends FixTag {
 	 */
 	DecimalArithmetic getArithmetic();
 
+	/**
+	 * Returns the precision for tag values, for instance 2 for 2 decimal places.
+	 * @return the precision after the decimal point
+	 */
+	default int getPrecision() {
+		return getArithmetic().getScale();
+	}
+
 	@Override
 	default void dispatch(CharSequence value, TagValueConsumer consumer) throws InvalidValueException {
 		consumer.acceptDecimal(this, convertFrom(value, 0, value.length()));

@@ -23,9 +23,11 @@
  */
 package org.fix4j.engine.tag.impl;
 
+import java.math.RoundingMode;
 import java.util.Objects;
 
 import org.decimal4j.api.DecimalArithmetic;
+import org.decimal4j.scale.Scales;
 import org.fix4j.engine.tag.DecimalTag;
 
 public class BasicDecimalTag extends AbstractFixTag implements DecimalTag {
@@ -36,12 +38,20 @@ public class BasicDecimalTag extends AbstractFixTag implements DecimalTag {
 		super(tag);
 		this.arithmetic = Objects.requireNonNull(arithmetic, "arithmetic is null");
 	}
+
+	public BasicDecimalTag(final int tag, final int precision, final RoundingMode roundingMode) {
+		this(tag, Scales.getScaleMetrics(precision).getCheckedArithmetic(roundingMode));
+	}
 	
 	public BasicDecimalTag(final String name, final int tag, final DecimalArithmetic arithmetic) {
 		super(name, tag);
 		this.arithmetic = Objects.requireNonNull(arithmetic, "arithmetic is null");
 	}
 	
+	public BasicDecimalTag(final String name, final int tag, final int precision, final RoundingMode roundingMode) {
+		this(name, tag, Scales.getScaleMetrics(precision).getCheckedArithmetic(roundingMode));
+	}
+
 	@Override
 	public final DecimalArithmetic getArithmetic() {
 		return arithmetic;
