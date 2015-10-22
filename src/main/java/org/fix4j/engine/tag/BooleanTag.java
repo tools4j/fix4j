@@ -40,4 +40,7 @@ public interface BooleanTag extends FixTag {
 	default void convertTo(boolean value, Appendable destination) throws IOException {
 		destination.append(value ? 'Y' : 'N');
 	}
+	default String convertToString(boolean value) {
+		return value ? "Y" : "N";
+	}
 }

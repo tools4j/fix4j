@@ -40,4 +40,7 @@ public interface CharTag extends FixTag {
 	default void convertTo(char value, Appendable destination) throws IOException {
 		destination.append(value);
 	}
+	default String convertToString(char value) {
+		return String.valueOf(value);
+	}
 }

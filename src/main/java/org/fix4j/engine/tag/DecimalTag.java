@@ -56,4 +56,7 @@ public interface DecimalTag extends FixTag {
 	default void convertTo(long value, Appendable destination) throws IOException {
 		getArithmetic().toString(value, destination);
 	}
+	default String convertToString(long value) {
+		return getArithmetic().toString(value);
+	}
 }

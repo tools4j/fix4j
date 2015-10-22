@@ -30,6 +30,7 @@ import org.fix4j.engine.tag.BooleanTag;
 import org.fix4j.engine.tag.CharTag;
 import org.fix4j.engine.tag.DecimalTag;
 import org.fix4j.engine.tag.DoubleTag;
+import org.fix4j.engine.tag.GroupTag;
 import org.fix4j.engine.tag.IntTag;
 import org.fix4j.engine.tag.LongTag;
 
@@ -48,6 +49,13 @@ public class ParseUtil {
 		return LONG_ARITHMETIC.parse(seq, start, end);
 	}
 
+	public static int parseInt(GroupTag tag, CharSequence seq, int start, int end) throws InvalidValueException {
+		try {
+			return parseInt(seq, start, end);
+		} catch (Exception e) {
+			throw new InvalidValueException(tag, seq, start, end, e);
+		}
+	}
 	public static int parseInt(IntTag tag, CharSequence seq, int start, int end) throws InvalidValueException {
 		try {
 			return parseInt(seq, start, end);

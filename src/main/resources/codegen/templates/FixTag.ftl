@@ -22,7 +22,7 @@
 </#macro> 
 
 <@pp.changeOutputFile name=pp.home + "org/fix4j/engine/fix/" + versionString + "/FixTag" + version + ".java" />
-package org.fixj.engine.fix.${versionString};
+package org.fix4j.engine.fix.${versionString};
 <#list doc.Fields.Field as field>
 	<#if mappings[field.Type]?? && mappings[field.Type]?starts_with("DecimalTag")>
 

@@ -36,4 +36,5 @@ public interface ObjectTag<T> extends FixTag {
 	Class<T> valueType();
 	T convertFrom(CharSequence value, int start, int end) throws InvalidValueException;
 	void convertTo(T value, Appendable destination) throws IOException;
+	String convertToString(T value);
 }

@@ -21,26 +21,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.fix4j.engine.tag;
+package org.fix4j.engine.tag.impl;
 
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
-import org.fix4j.engine.exception.InvalidValueException;
-import org.fix4j.engine.stream.TagValueConsumer;
-import org.fix4j.engine.util.ParseUtil;
+import org.fix4j.engine.tag.FixTag;
+import org.fix4j.engine.tag.GroupTag;
 
-public interface LongTag extends FixTag {
+public class BasicGroupTag extends AbstractFixTag implements GroupTag {
+
+	private final List<FixTag> groupTags;
+
+	public BasicGroupTag(final int tag, List<FixTag> groupTags) {
+		super(tag);
+		this.groupTags = Collections.unmodifiableList(new ArrayList<FixTag>(groupTags));
+	}
+
+	public BasicGroupTag(final String name, final int tag, List<FixTag> groupTags) {
+		super(name, tag);
+		this.groupTags = Collections.unmodifiableList(new ArrayList<FixTag>(groupTags));
+	}
+
 	@Override
-	default void dispatch(CharSequence value, TagValueConsumer consumer) throws InvalidValueException {
-		consumer.acceptLong(this, convertFrom(value, 0, value.length()));
-	}
-	default long convertFrom(CharSequence value, int start, int end) throws InvalidValueException {
-		return ParseUtil.parseLong(this, value, start, end);
-	}
-	default void convertTo(long value, Appendable destination) throws IOException {
-		ParseUtil.LONG_ARITHMETIC.toString(value, destination);
-	}
-	default String convertToString(long value) {
-		return ParseUtil.LONG_ARITHMETIC.toString(value);
+	public List<FixTag> getGroupTags() {
+		return groupTags;
 	}
 }

@@ -24,23 +24,25 @@
 package org.fix4j.engine.tag;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.fix4j.engine.exception.InvalidValueException;
 import org.fix4j.engine.stream.TagValueConsumer;
 import org.fix4j.engine.util.ParseUtil;
 
-public interface LongTag extends FixTag {
+public interface GroupTag extends FixTag {
+	List<FixTag> getGroupTags();
 	@Override
 	default void dispatch(CharSequence value, TagValueConsumer consumer) throws InvalidValueException {
-		consumer.acceptLong(this, convertFrom(value, 0, value.length()));
+		consumer.acceptGroup(this, convertFrom(value, 0, value.length()));
 	}
-	default long convertFrom(CharSequence value, int start, int end) throws InvalidValueException {
-		return ParseUtil.parseLong(this, value, start, end);
+	default int convertFrom(CharSequence value, int start, int end) throws InvalidValueException {
+		return ParseUtil.parseInt(this, value, start, end);
 	}
-	default void convertTo(long value, Appendable destination) throws IOException {
+	default void convertTo(int value, Appendable destination) throws IOException {
 		ParseUtil.LONG_ARITHMETIC.toString(value, destination);
 	}
-	default String convertToString(long value) {
+	default String convertToString(int value) {
 		return ParseUtil.LONG_ARITHMETIC.toString(value);
 	}
 }

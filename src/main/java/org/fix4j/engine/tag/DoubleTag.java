@@ -41,4 +41,7 @@ public interface DoubleTag extends FixTag {
 	default void convertTo(double value, Appendable destination) throws IOException {
 		destination.append(String.valueOf(value));//FIXME make this garbage free
 	}
+	default String convertToString(double value) {
+		return String.valueOf(value);
+	}
 }

@@ -29,6 +29,7 @@ import org.fix4j.engine.tag.CharTag;
 import org.fix4j.engine.tag.DecimalTag;
 import org.fix4j.engine.tag.DoubleTag;
 import org.fix4j.engine.tag.FixTag;
+import org.fix4j.engine.tag.GroupTag;
 import org.fix4j.engine.tag.IntTag;
 import org.fix4j.engine.tag.LongTag;
 import org.fix4j.engine.tag.ObjectTag;
@@ -42,6 +43,7 @@ public interface TagValueConsumer {
 	void acceptDouble(DoubleTag tag, double value);
 	void acceptDecimal(DecimalTag tag, long value);
 	void acceptString(StringTag tag, CharSequence value);
+	void acceptGroup(GroupTag tag, int groupSize);
 	<T> void acceptObject(ObjectTag<T> tag, T value);
 	void acceptOther(FixTag tag, CharSequence value);
 	

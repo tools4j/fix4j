@@ -40,4 +40,7 @@ public interface IntTag extends FixTag {
 	default void convertTo(int value, Appendable destination) throws IOException {
 		ParseUtil.LONG_ARITHMETIC.toString(value, destination);
 	}
+	default String convertToString(int value) {
+		return ParseUtil.LONG_ARITHMETIC.toString(value);
+	}
 }

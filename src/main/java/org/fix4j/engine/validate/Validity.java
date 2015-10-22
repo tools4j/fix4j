@@ -21,26 +21,53 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.fix4j.engine.tag;
+package org.fix4j.engine.validate;
 
-import java.io.IOException;
+import java.util.function.Function;
 
-import org.fix4j.engine.exception.InvalidValueException;
-import org.fix4j.engine.stream.TagValueConsumer;
-import org.fix4j.engine.util.ParseUtil;
-
-public interface LongTag extends FixTag {
-	@Override
-	default void dispatch(CharSequence value, TagValueConsumer consumer) throws InvalidValueException {
-		consumer.acceptLong(this, convertFrom(value, 0, value.length()));
-	}
-	default long convertFrom(CharSequence value, int start, int end) throws InvalidValueException {
-		return ParseUtil.parseLong(this, value, start, end);
-	}
-	default void convertTo(long value, Appendable destination) throws IOException {
-		ParseUtil.LONG_ARITHMETIC.toString(value, destination);
-	}
-	default String convertToString(long value) {
-		return ParseUtil.LONG_ARITHMETIC.toString(value);
-	}
+public interface Validity {
+	boolean isValid();
+	String getValidationMessage();
+	
+	public Validity VALID = new Validity() {
+		@Override
+		public boolean isValid() {
+			return true;
+		}
+		@Override
+		public String getValidationMessage() {
+			return "valid";
+		}
+		public String toString() {
+			return "Valid";
+		}
+	}; 
+	public Validity INVALID = new Validity() {
+		@Override
+		public boolean isValid() {
+			return false;
+		}
+		@Override
+		public String getValidationMessage() {
+			return "invalid";
+		}
+		public String toString() {
+			return "Invalid";
+		}
+	}; 
+	public Function<String, Validity> INVALID_WITH_MESSAGE = (m) -> new Validity() {
+		@Override
+		public boolean isValid() {
+			return false;
+		}
+		
+		@Override
+		public String getValidationMessage() {
+			return m;
+		}
+		public String toString() {
+			return "Invalid(" + m + ")";
+		}
+	};
+	public Validity NO_SUCH_TAG = INVALID_WITH_MESSAGE.apply("No such tag");
 }

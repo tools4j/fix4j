@@ -21,26 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.fix4j.engine.tag;
+package org.fix4j.engine.exception;
 
-import java.io.IOException;
+import org.fix4j.engine.tag.FixTag;
 
-import org.fix4j.engine.exception.InvalidValueException;
-import org.fix4j.engine.stream.TagValueConsumer;
-import org.fix4j.engine.util.ParseUtil;
+public class NoSuchTagException extends Fix4jException {
 
-public interface LongTag extends FixTag {
-	@Override
-	default void dispatch(CharSequence value, TagValueConsumer consumer) throws InvalidValueException {
-		consumer.acceptLong(this, convertFrom(value, 0, value.length()));
-	}
-	default long convertFrom(CharSequence value, int start, int end) throws InvalidValueException {
-		return ParseUtil.parseLong(this, value, start, end);
-	}
-	default void convertTo(long value, Appendable destination) throws IOException {
-		ParseUtil.LONG_ARITHMETIC.toString(value, destination);
-	}
-	default String convertToString(long value) {
-		return ParseUtil.LONG_ARITHMETIC.toString(value);
+	private static final long serialVersionUID = 1L;
+
+	public NoSuchTagException(final FixTag tag) {
+		super("Tag is illegal in message or group: " + tag);
 	}
 }

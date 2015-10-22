@@ -94,4 +94,9 @@ public class CharEncodedEnumTag<T extends Enum<T>> extends AbstractEnumTag<T> {
 		final char code = enumToCharEncoder.apply(value);
 		destination.append(code);
 	}
+	
+	@Override
+	public String convertToString(T value) {
+		return String.valueOf(enumToCharEncoder.apply(value));
+	}
 }
