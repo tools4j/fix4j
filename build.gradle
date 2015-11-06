@@ -46,7 +46,7 @@ configurations.all {
 }
 
 dependencies {
-	compile group: "org.decimal4j", name: "decimal4j", version: "1.0.1-SNAPSHOT", changing: true
+	compile group: "org.decimal4j", name: "decimal4j", version: "1.0.1", changing: true
     testCompile 'junit:junit:4.11'
 }
 
