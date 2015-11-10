@@ -27,12 +27,8 @@ import org.fix4j.engine.tag.DoubleTag;
 
 public class BasicDoubleTag extends AbstractFixTag implements DoubleTag {
 
-	public BasicDoubleTag(final int tag) {
-		super(tag);
-	}
-	
-	public BasicDoubleTag(final String name, final int tag) {
-		super(name, tag);
+	public BasicDoubleTag(final int tag, final String type, final String name) {
+		super(tag, type, name);
 	}
 
 }

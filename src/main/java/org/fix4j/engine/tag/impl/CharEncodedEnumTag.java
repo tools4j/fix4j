@@ -38,14 +38,8 @@ public class CharEncodedEnumTag<T extends Enum<T>> extends AbstractEnumTag<T> {
 		char apply(T value);
 	}
 
-	public CharEncodedEnumTag(final int tag, final Class<T> enumType, final CharEncoder<T> enumToCharEncoder) {
-		super(tag, enumType);
-		this.enumToCharEncoder = Objects.requireNonNull(enumToCharEncoder, "enumToCharEncoder is null");
-		this.universe = initUniverse(enumType, enumToCharEncoder);
-	}
-
-	public CharEncodedEnumTag(final String name, final int tag, final Class<T> enumType, final CharEncoder<T> enumToCharEncoder) {
-		super(name, tag, enumType);
+	public CharEncodedEnumTag(final int tag, final String type, final String name, final Class<T> enumType, final CharEncoder<T> enumToCharEncoder) {
+		super(tag, type, name, enumType);
 		this.enumToCharEncoder = Objects.requireNonNull(enumToCharEncoder, "enumToCharEncoder is null");
 		this.universe = initUniverse(enumType, enumToCharEncoder);
 	}

@@ -27,12 +27,8 @@ import org.fix4j.engine.tag.CharTag;
 
 public class BasicCharTag extends AbstractFixTag implements CharTag {
 
-	public BasicCharTag(final int tag) {
-		super(tag);
-	}
-	
-	public BasicCharTag(final String name, final int tag) {
-		super(name, tag);
+	public BasicCharTag(final int tag, final String type, final String name) {
+		super(tag, type, name);
 	}
 
 }

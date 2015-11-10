@@ -34,13 +34,8 @@ public class BasicGroupTag extends AbstractFixTag implements GroupTag {
 
 	private final List<FixTag> groupTags;
 
-	public BasicGroupTag(final int tag, List<FixTag> groupTags) {
-		super(tag);
-		this.groupTags = Collections.unmodifiableList(new ArrayList<FixTag>(groupTags));
-	}
-
-	public BasicGroupTag(final String name, final int tag, List<FixTag> groupTags) {
-		super(name, tag);
+	public BasicGroupTag(final int tag, final String type, final String name, final List<FixTag> groupTags) {
+		super(tag, type, name);
 		this.groupTags = Collections.unmodifiableList(new ArrayList<FixTag>(groupTags));
 	}
 

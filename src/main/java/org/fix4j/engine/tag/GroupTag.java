@@ -37,7 +37,7 @@ public interface GroupTag extends FixTag {
 		consumer.acceptGroup(this, convertFrom(value, 0, value.length()));
 	}
 	default int convertFrom(CharSequence value, int start, int end) throws InvalidValueException {
-		return ParseUtil.parseInt(this, value, start, end);
+		return ParseUtil.parseNonNegativeInt(this, value, start, end);
 	}
 	default void convertTo(int value, Appendable destination) throws IOException {
 		ParseUtil.LONG_ARITHMETIC.toString(value, destination);

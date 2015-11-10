@@ -34,22 +34,13 @@ public class BasicDecimalTag extends AbstractFixTag implements DecimalTag {
 
 	private final DecimalArithmetic arithmetic;
 
-	public BasicDecimalTag(final int tag, final DecimalArithmetic arithmetic) {
-		super(tag);
-		this.arithmetic = Objects.requireNonNull(arithmetic, "arithmetic is null");
-	}
-
-	public BasicDecimalTag(final int tag, final int precision, final RoundingMode roundingMode) {
-		this(tag, Scales.getScaleMetrics(precision).getCheckedArithmetic(roundingMode));
-	}
-	
-	public BasicDecimalTag(final String name, final int tag, final DecimalArithmetic arithmetic) {
-		super(name, tag);
+	public BasicDecimalTag(final int tag, final String type, final String name, final DecimalArithmetic arithmetic) {
+		super(tag, type, name);
 		this.arithmetic = Objects.requireNonNull(arithmetic, "arithmetic is null");
 	}
 	
-	public BasicDecimalTag(final String name, final int tag, final int precision, final RoundingMode roundingMode) {
-		this(name, tag, Scales.getScaleMetrics(precision).getCheckedArithmetic(roundingMode));
+	public BasicDecimalTag(final int tag, final String type, final String name, final int precision, final RoundingMode roundingMode) {
+		this(tag, type, name, Scales.getScaleMetrics(precision).getCheckedArithmetic(roundingMode));
 	}
 
 	@Override

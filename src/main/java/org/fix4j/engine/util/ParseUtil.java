@@ -45,13 +45,27 @@ public class ParseUtil {
 		}
 		throw new ArithmeticException("Overflow: value " + value + " is out of the integer range");
 	}
+	public static int parseNonNegativeInt(CharSequence seq, int start, int end) {
+		final int value = parseInt(seq, start, end);
+		if (0 <= value) {
+			return value;
+		}
+		throw new ArithmeticException("Value " + value + " is must not be negative");
+	}
 	public static long parseLong(CharSequence seq, int start, int end) {
 		return LONG_ARITHMETIC.parse(seq, start, end);
 	}
 
-	public static int parseInt(GroupTag tag, CharSequence seq, int start, int end) throws InvalidValueException {
+	public static int parseNonNegativeInt(GroupTag tag, CharSequence seq, int start, int end) throws InvalidValueException {
 		try {
-			return parseInt(seq, start, end);
+			return parseNonNegativeInt(seq, start, end);
+		} catch (Exception e) {
+			throw new InvalidValueException(tag, seq, start, end, e);
+		}
+	}
+	public static int parseNonNegativeInt(IntTag tag, CharSequence seq, int start, int end) throws InvalidValueException {
+		try {
+			return parseNonNegativeInt(seq, start, end);
 		} catch (Exception e) {
 			throw new InvalidValueException(tag, seq, start, end, e);
 		}

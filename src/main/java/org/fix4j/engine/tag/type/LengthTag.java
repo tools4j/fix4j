@@ -21,23 +21,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.fix4j.engine.tag.impl;
+package org.fix4j.engine.tag.type;
 
-import java.util.Objects;
+import org.fix4j.engine.exception.InvalidValueException;
+import org.fix4j.engine.tag.impl.BasicIntTag;
+import org.fix4j.engine.util.ParseUtil;
 
-import org.fix4j.engine.tag.ObjectTag;
+public class LengthTag extends BasicIntTag {
 
-abstract public class AbstractEnumTag<T extends Enum<T>> extends AbstractFixTag implements ObjectTag<T> {
-	
-	private final Class<T> enumType;
-	
-	public AbstractEnumTag(final int tag, final String type, final String name, final Class<T> enumType) {
-		super(tag, type, name);
-		this.enumType = Objects.requireNonNull(enumType, "enumType is null");
+	public LengthTag(final int tag, final String name) {
+		super(tag, "Length", name);
 	}
-	
-	@Override
-	public final Class<T> valueType() {
-		return enumType;
+
+	public int convertFrom(CharSequence value, int start, int end) throws InvalidValueException {
+		return ParseUtil.parseNonNegativeInt(this, value, start, end);
 	}
+
 }

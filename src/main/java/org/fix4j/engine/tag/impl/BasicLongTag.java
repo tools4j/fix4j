@@ -27,12 +27,8 @@ import org.fix4j.engine.tag.LongTag;
 
 public class BasicLongTag extends AbstractFixTag implements LongTag {
 
-	public BasicLongTag(final int tag) {
-		super(tag);
-	}
-	
-	public BasicLongTag(final String name, final int tag) {
-		super(name, tag);
+	public BasicLongTag(final int tag, final String type, final String name) {
+		super(tag, type, name);
 	}
 
 }

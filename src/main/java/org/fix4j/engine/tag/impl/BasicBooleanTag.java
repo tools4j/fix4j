@@ -27,12 +27,8 @@ import org.fix4j.engine.tag.BooleanTag;
 
 public class BasicBooleanTag extends AbstractFixTag implements BooleanTag {
 
-	public BasicBooleanTag(final int tag) {
-		super(tag);
-	}
-	
-	public BasicBooleanTag(final String name, final int tag) {
-		super(name, tag);
+	public BasicBooleanTag(final int tag, final String type, final String name) {
+		super(tag, type, name);
 	}
 
 }

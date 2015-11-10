@@ -29,20 +29,14 @@ import org.fix4j.engine.tag.FixTag;
 
 abstract public class AbstractFixTag implements FixTag {
 	
-	private final String name;
 	private final int tag;
+	private final String type;
+	private final String name;
 
-	public AbstractFixTag(final int tag) {
-		this.name = getSimpleTagName() + "(" + tag + ")";
+	public AbstractFixTag(final int tag, final String type, final String name) {
 		this.tag = validateTag(tag);
-	}
-	public AbstractFixTag(final String name, final int tag) {
+		this.type = Objects.requireNonNull(type, "type is null");
 		this.name = Objects.requireNonNull(name, "name is null");
-		this.tag = validateTag(tag);
-	}
-	private String getSimpleTagName() {
-		final String name = getClass().getSimpleName();
-		return name.endsWith("Tag") ? name.substring(0, name.length() - 3) : name;
 	}
 	
 	private static int validateTag(int tag) {
@@ -55,6 +49,15 @@ abstract public class AbstractFixTag implements FixTag {
 	@Override
 	public final int tag() {
 		return tag;
+	}
+	
+	@Override
+	public String name() {
+		return name;
+	}
+	
+	public String type() {
+		return type;
 	}
 	
 	@Override

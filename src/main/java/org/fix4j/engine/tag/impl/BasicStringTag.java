@@ -27,12 +27,8 @@ import org.fix4j.engine.tag.StringTag;
 
 public class BasicStringTag extends AbstractFixTag implements StringTag {
 
-	public BasicStringTag(final int tag) {
-		super(tag);
-	}
-	
-	public BasicStringTag(final String name, final int tag) {
-		super(name, tag);
+	public BasicStringTag(final int tag, final String type, final String name) {
+		super(tag, type, name);
 	}
 
 }

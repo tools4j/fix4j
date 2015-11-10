@@ -27,12 +27,8 @@ import org.fix4j.engine.tag.IntTag;
 
 public class BasicIntTag extends AbstractFixTag implements IntTag {
 
-	public BasicIntTag(final int tag) {
-		super(tag);
-	}
-	
-	public BasicIntTag(final String name, final int tag) {
-		super(name, tag);
+	public BasicIntTag(final int tag, final String type, final String name) {
+		super(tag, type, name);
 	}
 
 }
