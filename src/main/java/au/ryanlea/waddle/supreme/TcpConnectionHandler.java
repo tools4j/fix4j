@@ -1,9 +1,7 @@
 package au.ryanlea.waddle.supreme;
 
 import java.io.IOException;
-import java.nio.channels.ClosedChannelException;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
+import java.nio.channels.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,46 +12,66 @@ public class TcpConnectionHandler {
 
     private final Selector selector;
 
-    private final List<SelectionKey> acceptKeys = new ArrayList<>();
-
-    private final List<SelectionKey> initiateKeys = new ArrayList<>();
+    private final List<SelectionKey> selectionKeys = new ArrayList<>();
 
     private final TcpExceptionHandler tcpExceptionHandler;
+
+    private int select;
 
     public TcpConnectionHandler(final TcpExceptionHandler tcpExceptionHandler) throws IOException {
         this.tcpExceptionHandler = tcpExceptionHandler;
         this.selector = Selector.open();
     }
 
-    public void register(FixSessionConnectionAcceptor fixSessionAcceptor) throws ClosedChannelException {
-        acceptKeys.add(fixSessionAcceptor.serverSocketChannel().register(selector, SelectionKey.OP_ACCEPT, fixSessionAcceptor));
+    public void register(ServerSocketChannel serverSocketChannel, FixSession fixSession) throws ClosedChannelException {
+        selectionKeys.add(serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT, fixSession));
     }
 
-    public void register(FixSessionConnectionInitiator fixSessionInitiator) throws ClosedChannelException {
-        initiateKeys.add(fixSessionInitiator.socketChannel().register(selector, SelectionKey.OP_CONNECT, fixSessionInitiator));
+    public void register(SocketChannel socketChannel, FixSession fixSession) throws ClosedChannelException {
+        selectionKeys.add(socketChannel.register(selector, SelectionKey.OP_CONNECT, fixSession));
     }
 
-    public void handle() {
+    public TcpConnectionHandler selectAndConnect() {
         try {
-            if (selector.selectNow() > 0) {
-                for (int i = 0; i < acceptKeys.size(); i++) {
-                    final SelectionKey key = acceptKeys.get(i);
-                    if (key.isAcceptable()) {
-                        final FixSessionConnectionAcceptor fixSessionAcceptor = (FixSessionConnectionAcceptor) key.attachment();
-                        fixSessionAcceptor.connect().socketChannel().register(selector, SelectionKey.OP_READ);
-                    }
-                }
-                for (int i = 0; i < initiateKeys.size(); i++) {
-                    final SelectionKey key = initiateKeys.get(i);
-                    if (key.isConnectable()) {
-                        final FixSessionConnectionInitiator fixSessionInitiator = (FixSessionConnectionInitiator) key.attachment();
-                        fixSessionInitiator.connect();
-                        key.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+            select = selector.selectNow();
+            if (select > 0) {
+                for (int i = 0; i < selectionKeys.size(); i++) {
+                    final SelectionKey key = selectionKeys.get(i);
+                    final FixSession fixSession = (FixSession) key.attachment();
+                    if (key.isAcceptable() || key.isConnectable()) {
+                        fixSession.tcpConnection().connect().socketChannel().register(selector, SelectionKey.OP_READ);
                     }
                 }
             }
         } catch (IOException e) {
             tcpExceptionHandler.onError(e);
         }
+        return this;
+    }
+
+    public TcpConnectionHandler fromWire() {
+        if (select > 0) {
+            for (int i = 0; i < selectionKeys.size(); i++) {
+                final SelectionKey key = selectionKeys.get(i);
+                final FixSession fixSession = (FixSession) key.attachment();
+                if (key.isReadable()) {
+                    fixSession.fromWire();
+                }
+            }
+        }
+        return this;
+    }
+
+    public TcpConnectionHandler toWire() {
+        if (select > 0) {
+            for (int i = 0; i < selectionKeys.size(); i++) {
+                final SelectionKey key = selectionKeys.get(i);
+                final FixSession fixSession = (FixSession) key.attachment();
+                if (key.isWritable()) {
+                    fixSession.toWire();
+                }
+            }
+        }
+        return this;
     }
 }

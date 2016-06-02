@@ -1,7 +1,5 @@
 package au.ryanlea.waddle.supreme;
 
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 
 /**
@@ -11,7 +9,7 @@ public interface TcpExceptionHandler {
 
     void onError(IOException ioe);
 
-    void onError(FixSessionConnection fixSessionConnection, IOException ioe);
+    void onError(TcpConnection tcpConnection, IOException ioe);
 
     static TcpExceptionHandler throwing() {
         return new TcpExceptionHandler() {
@@ -21,7 +19,7 @@ public interface TcpExceptionHandler {
             }
 
             @Override
-            public void onError(FixSessionConnection fixSessionConnection, IOException ioe) {
+            public void onError(TcpConnection tcpConnection, IOException ioe) {
                 throw new SupremeWaddleException(ioe);
             }
         };

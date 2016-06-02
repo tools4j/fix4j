@@ -4,7 +4,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -16,9 +15,9 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class FixEngine {
 
-    private final AtomicReference<FixSessionConnection> connectionToAdd = new AtomicReference<>();
+    private final AtomicReference<FixSession> fixSessionToAdd = new AtomicReference<>();
 
-    private final List<FixSessionConnection> fixSessionConnections = new ArrayList<>();
+    private final List<FixSession> fixSessions = new ArrayList<>();
 
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
@@ -33,27 +32,37 @@ public class FixEngine {
         this.exceptionHandler = exceptionHandler;
     }
 
-    public FixEngine register(@NotNull FixSessionConnection fixSessionConnection) {
+    public FixEngine register(@NotNull FixSession fixSession) {
         while (true) {
-            if (connectionToAdd.compareAndSet(null, fixSessionConnection)) {
+            if (fixSessionToAdd.compareAndSet(null, fixSession)) {
                 return this;
             }
         }
     }
 
-    public Iterable<FixSessionConnection> acceptorFixSessions() {
-        return fixSessionConnections;
+    public Iterable<FixSession> fixSessions() {
+        return fixSessions;
     }
 
     public FixEngine start() {
         executorService.submit(() -> {
             try {
                 while (!terminated.get()) {
-                    addNewConnection();
-                    for (int i = 0; i < fixSessionConnections.size(); i++) {
-                        fixSessionConnections.get(i).establish(tcpConnectionHandler);
+                    addNewFixSession();
+
+                    // establish new sessions
+                    establishFixSessions();
+
+                    // read input messages into log
+                    tcpConnectionHandler.fromWire();
+
+                    // process messages (session and application)
+                    for (int i = 0; i < fixSessions.size(); i++) {
+                        fixSessions.get(i).process();
                     }
-                    tcpConnectionHandler.handle();
+
+                    // write output messages from log
+                    tcpConnectionHandler.toWire();
                 }
             } catch (Exception e) {
                 exceptionHandler.onError(e);
@@ -62,10 +71,17 @@ public class FixEngine {
         return this;
     }
 
-    private void addNewConnection() {
-        FixSessionConnection fixSessionConnection = connectionToAdd.getAndSet(null);
-        if (fixSessionConnection != null) {
-            fixSessionConnections.add(fixSessionConnection);
+    private void establishFixSessions() {
+        for (int i = 0; i < fixSessions.size(); i++) {
+            fixSessions.get(i).establish();
+        }
+        tcpConnectionHandler.selectAndConnect();
+    }
+
+    private void addNewFixSession() {
+        FixSession fixSession = fixSessionToAdd.getAndSet(null);
+        if (fixSession != null) {
+            fixSessions.add(fixSession);
         }
     }
 

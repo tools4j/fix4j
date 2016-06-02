@@ -7,23 +7,29 @@ import java.nio.channels.SocketChannel;
 /**
  * Created by ryan on 1/06/16.
  */
-public class FixSessionConnectionInitiator implements FixSessionConnection {
-
-    private final TcpExceptionHandler tcpExceptionHandler;
+public class TcpConnectionInitiator implements TcpConnection {
 
     private final String hostname;
 
     private final int port;
 
+    private final TcpExceptionHandler tcpExceptionHandler;
+
+    private final TcpConnectionHandler tcpConnectionHandler;
+
     private SocketChannel socketChannel;
 
-    public FixSessionConnectionInitiator(final String hostname, final int port, final TcpExceptionHandler tcpExceptionHandler) {
+    public TcpConnectionInitiator(final String hostname,
+                                  final int port,
+                                  final TcpExceptionHandler tcpExceptionHandler,
+                                  final TcpConnectionHandler tcpConnectionHandler) {
         this.hostname = hostname;
         this.port = port;
         this.tcpExceptionHandler = tcpExceptionHandler;
+        this.tcpConnectionHandler = tcpConnectionHandler;
     }
 
-    public FixSessionConnection establish(final TcpConnectionHandler tcpConnectionHandler) {
+    public TcpConnection establish(final FixSession fixSession) {
         if (socketChannel != null) {
             return this;
         }
@@ -32,15 +38,10 @@ public class FixSessionConnectionInitiator implements FixSessionConnection {
             socketChannel = SocketChannel.open();
             socketChannel.configureBlocking(false);
             socketChannel.connect(new InetSocketAddress(hostname, port));
-            tcpConnectionHandler.register(this);
+            tcpConnectionHandler.register(socketChannel, fixSession);
         } catch (IOException ioe) {
             tcpExceptionHandler.onError(this, ioe);
         }
-        return this;
-    }
-
-    @Override
-    public FixSessionConnection action() {
         return this;
     }
 
@@ -48,7 +49,9 @@ public class FixSessionConnectionInitiator implements FixSessionConnection {
         return socketChannel;
     }
 
-    public FixSessionConnectionInitiator connect() {
+    public TcpConnectionInitiator connect() {
         return this;
     }
+
+
 }

@@ -8,25 +8,31 @@ import java.nio.channels.SocketChannel;
 /**
  * Created by ryan on 1/06/16.
  */
-public class FixSessionConnectionAcceptor implements FixSessionConnection {
+public class TcpConnectionAcceptor implements TcpConnection {
 
-    private String hostname;
+    private final String hostname;
 
-    private int port;
+    private final int port;
+
+    private final TcpExceptionHandler tcpExceptionHandler;
+
+    private final TcpConnectionHandler tcpConnectionHandler;
 
     private ServerSocketChannel serverSocketChannel;
 
     private SocketChannel socketChannel;
 
-    private final TcpExceptionHandler tcpExceptionHandler;
-
-    public FixSessionConnectionAcceptor(final String hostname, final int port, final TcpExceptionHandler tcpExceptionHandler) {
+    public TcpConnectionAcceptor(final String hostname,
+                                 final int port,
+                                 final TcpExceptionHandler tcpExceptionHandler,
+                                 final TcpConnectionHandler tcpConnectionHandler) {
         this.hostname = hostname;
         this.port = port;
         this.tcpExceptionHandler = tcpExceptionHandler;
+        this.tcpConnectionHandler = tcpConnectionHandler;
     }
 
-    public FixSessionConnection establish(TcpConnectionHandler tcpConnectionHandler) {
+    public TcpConnection establish(final FixSession fixSession) {
         if (serverSocketChannel != null) {
             return this;
         }
@@ -36,7 +42,7 @@ public class FixSessionConnectionAcceptor implements FixSessionConnection {
             serverSocketChannel.socket().bind(new InetSocketAddress(hostname, port));
             serverSocketChannel.configureBlocking(false);
 
-            tcpConnectionHandler.register(this);
+            tcpConnectionHandler.register(serverSocketChannel, fixSession);
         } catch (IOException e) {
             tcpExceptionHandler.onError(this, e);
         }
@@ -44,16 +50,11 @@ public class FixSessionConnectionAcceptor implements FixSessionConnection {
         return this;
     }
 
-    @Override
-    public FixSessionConnection action() {
-        return this;
-    }
-
     public ServerSocketChannel serverSocketChannel() {
         return serverSocketChannel;
     }
 
-    public FixSessionConnectionAcceptor connect() {
+    public TcpConnectionAcceptor connect() {
         try {
             socketChannel = serverSocketChannel.accept();
             socketChannel.configureBlocking(false);
@@ -66,5 +67,4 @@ public class FixSessionConnectionAcceptor implements FixSessionConnection {
     public SocketChannel socketChannel() {
         return socketChannel;
     }
-
 }
