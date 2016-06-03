@@ -13,4 +13,7 @@ public interface TcpConnection {
 
     SocketChannel socketChannel();
 
+    Buffer buffer();
+
+    boolean isConnected();
 }

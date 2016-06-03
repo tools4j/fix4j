@@ -1,7 +1,5 @@
 package au.ryanlea.waddle.supreme;
 
-import java.util.concurrent.ConcurrentLinkedDeque;
-
 /**
  * Created by ryan on 2/06/16.
  */
@@ -12,6 +10,8 @@ public class FixSession {
     private final MessageLog inbound;
 
     private final MessageLog outbound;
+
+    private boolean loggedOn;
 
     public FixSession(final TcpConnection tcpConnection, final MessageLog inbound, final MessageLog outbound) {
         this.tcpConnection = tcpConnection;
@@ -24,13 +24,13 @@ public class FixSession {
         return this;
     }
 
-    public FixSession send(String message) {
-
+    public FixSession send(Message message) {
+        outbound.readFrom(message);
         return this;
     }
 
     public FixSession fromWire() {
-        inbound.read(tcpConnection.socketChannel());
+        inbound.readFrom(tcpConnection.buffer());
         return this;
     }
 
@@ -39,15 +39,23 @@ public class FixSession {
     }
 
     public FixSession toWire() {
-        outbound.write(tcpConnection.socketChannel());
+        outbound.writeTo(tcpConnection.buffer());
         return this;
     }
 
     public FixSession process() {
-        // read messages from inbound
+        // readFrom messages from inbound
 
         // add heartbeat or test request if required.
+        logon();
 
         return this;
     }
+
+    private void logon() {
+        if (tcpConnection.isConnected() && !loggedOn) {
+            send(new StringMessage("logon"));
+        }
+    }
+
 }

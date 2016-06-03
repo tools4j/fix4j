@@ -53,7 +53,7 @@ public class FixEngine {
                     // establish new sessions
                     establishFixSessions();
 
-                    // read input messages into log
+                    // readFrom input messages into log
                     tcpConnectionHandler.fromWire();
 
                     // process messages (session and application)
@@ -61,7 +61,7 @@ public class FixEngine {
                         fixSessions.get(i).process();
                     }
 
-                    // write output messages from log
+                    // writeTo output messages from log
                     tcpConnectionHandler.toWire();
                 }
             } catch (Exception e) {

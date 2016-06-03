@@ -19,6 +19,8 @@ public class TcpConnectionInitiator implements TcpConnection {
 
     private SocketChannel socketChannel;
 
+    private ByteChannelBuffer byteChannelBuffer;
+
     public TcpConnectionInitiator(final String hostname,
                                   final int port,
                                   final TcpExceptionHandler tcpExceptionHandler,
@@ -38,6 +40,7 @@ public class TcpConnectionInitiator implements TcpConnection {
             socketChannel = SocketChannel.open();
             socketChannel.configureBlocking(false);
             socketChannel.connect(new InetSocketAddress(hostname, port));
+            byteChannelBuffer = new ByteChannelBuffer(socketChannel);
             tcpConnectionHandler.register(socketChannel, fixSession);
         } catch (IOException ioe) {
             tcpExceptionHandler.onError(this, ioe);
@@ -49,7 +52,22 @@ public class TcpConnectionInitiator implements TcpConnection {
         return socketChannel;
     }
 
+    @Override
+    public Buffer buffer() {
+        return byteChannelBuffer;
+    }
+
+    @Override
+    public boolean isConnected() {
+        return socketChannel.isConnected();
+    }
+
     public TcpConnectionInitiator connect() {
+        try {
+            socketChannel.finishConnect();
+        } catch (IOException e) {
+            tcpExceptionHandler.onError(this, e);
+        }
         return this;
     }
 

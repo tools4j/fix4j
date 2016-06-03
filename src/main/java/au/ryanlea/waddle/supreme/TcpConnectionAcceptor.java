@@ -22,6 +22,8 @@ public class TcpConnectionAcceptor implements TcpConnection {
 
     private SocketChannel socketChannel;
 
+    private ByteChannelBuffer byteChannelBuffer;
+
     public TcpConnectionAcceptor(final String hostname,
                                  final int port,
                                  final TcpExceptionHandler tcpExceptionHandler,
@@ -58,6 +60,7 @@ public class TcpConnectionAcceptor implements TcpConnection {
         try {
             socketChannel = serverSocketChannel.accept();
             socketChannel.configureBlocking(false);
+            byteChannelBuffer = new ByteChannelBuffer(socketChannel);
         } catch (IOException e) {
             tcpExceptionHandler.onError(this, e);
         }
@@ -66,5 +69,15 @@ public class TcpConnectionAcceptor implements TcpConnection {
 
     public SocketChannel socketChannel() {
         return socketChannel;
+    }
+
+    @Override
+    public Buffer buffer() {
+        return byteChannelBuffer;
+    }
+
+    @Override
+    public boolean isConnected() {
+        return socketChannel != null && socketChannel.isConnected();
     }
 }
