@@ -1,11 +1,5 @@
 apply plugin: 'java'
-apply plugin: 'jacoco'
 apply plugin: 'license'
-
-//temporary jacoco fix for java8
-jacoco {
-    toolVersion = "0.7.1.201405082137"
-}
 
 sourceCompatibility = 1.8
 group = "org.fix4j"
@@ -46,8 +40,14 @@ configurations.all {
 }
 
 dependencies {
-	compile group: "org.decimal4j", name: "decimal4j", version: "1.0.1", changing: true
-    testCompile 'junit:junit:4.11'
+    compile 'org.jetbrains:annotations:15.0'
+    compile 'org.slf4j:slf4j-api:1.7.21'
+    compile 'org.slf4j:slf4j-simple:1.7.21'
+    compile 'org.hdrhistogram:HdrHistogram:2.1.9'
+    compile 'org.decimal4j:decimal4j:1.0.1'
+    testCompile 'org.mockito:mockito-all:1.10.19'
+    testCompile 'org.assertj:assertj-core:3.4.1' 
+    testCompile 'junit:junit:4.12'
 }
 
 uploadArchives {
