@@ -72,29 +72,4 @@ public class TcpConnectionHandler {
         return this;
     }
 
-    public TcpConnectionHandler fromWire() {
-        if (select > 0) {
-            for (int i = 0; i < selectionKeys.size(); i++) {
-                final SelectionKey key = selectionKeys.get(i);
-                final FixSession fixSession = (FixSession) key.attachment();
-                if (key.isReadable()) {
-                    fixSession.fromWire();
-                }
-            }
-        }
-        return this;
-    }
-
-    public TcpConnectionHandler toWire() {
-        if (select > 0) {
-            for (int i = 0; i < selectionKeys.size(); i++) {
-                final SelectionKey key = selectionKeys.get(i);
-                final FixSession fixSession = (FixSession) key.attachment();
-                if (key.isWritable()) {
-                    fixSession.toWire();
-                }
-            }
-        }
-        return this;
-    }
 }
