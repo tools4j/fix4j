@@ -40,7 +40,12 @@ public class StringMessage implements Message {
     }
 
     @Override
-    public byte getByte(int pos) {
-        return (byte) content.charAt(pos);
+    public byte getByte(int idx) {
+        return (byte) content.charAt(idx);
+    }
+
+    @Override
+    public Buffer putByte(byte b) {
+        return this;
     }
 }

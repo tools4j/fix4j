@@ -66,7 +66,7 @@ public class UnsafeMessageLogTest {
 
     private void execute(final int threads, final int messages, final boolean record) throws IOException, InterruptedException {
         final File inbound = temporaryFolder.newFile("inbound-" + System.currentTimeMillis());
-        final UnsafeMessageLog unsafeMessageLog = new UnsafeMessageLog(inbound.getAbsolutePath(), 100 * 1024 * 1024);
+        final UnsafeMessageLog unsafeMessageLog = new UnsafeMessageLog(inbound.getAbsolutePath(), 100 * 1024 * 1024, ExceptionHandler.throwing());
         final ExecutorService executorService = Executors.newFixedThreadPool(threads);
         for (int i = 0; i < threads; i++) {
             executorService.submit(() -> {

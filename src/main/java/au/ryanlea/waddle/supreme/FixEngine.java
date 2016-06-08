@@ -23,8 +23,6 @@
  */
 package au.ryanlea.waddle.supreme;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -55,7 +53,7 @@ public class FixEngine {
         this.exceptionHandler = exceptionHandler;
     }
 
-    public FixEngine register(@NotNull FixSession fixSession) {
+    public FixEngine register(FixSession fixSession) {
         while (true) {
             if (fixSessionToAdd.compareAndSet(null, fixSession)) {
                 return this;
@@ -76,16 +74,14 @@ public class FixEngine {
                     // establish new sessions
                     establishFixSessions();
 
-                    // readFrom input messages into log
-                    tcpConnectionHandler.fromWire();
-
                     // process messages (session and application)
                     for (int i = 0; i < fixSessions.size(); i++) {
-                        fixSessions.get(i).process();
+                        final FixSession fixSession = fixSessions.get(i);
+                        fixSession.fromWire();
+                        fixSession.process();
+                        fixSession.toWire();
                     }
 
-                    // writeTo output messages from log
-                    tcpConnectionHandler.toWire();
                 }
             } catch (Exception e) {
                 exceptionHandler.onError(e);

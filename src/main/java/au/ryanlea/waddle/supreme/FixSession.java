@@ -53,7 +53,7 @@ public class FixSession {
     }
 
     public FixSession fromWire() {
-        inbound.readFrom(tcpConnection.buffer());
+        tcpConnection.readInto(inbound);
         return this;
     }
 
@@ -62,7 +62,7 @@ public class FixSession {
     }
 
     public FixSession toWire() {
-        outbound.writeTo(tcpConnection.buffer());
+        tcpConnection.writeFrom(outbound);
         return this;
     }
 

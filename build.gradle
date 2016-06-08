@@ -20,18 +20,18 @@ repositories {
 }
 
 buildscript {
-	repositories {
-		mavenCentral()
-		jcenter()
-	}
-	
-	dependencies {
-		classpath 'net.sourceforge.fmpp:fmpp:0.9.15'
-		classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.11.0'
-		classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.5.3"
-	}
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
 
-	ant.taskdef(name: 'fmpp', classname:'fmpp.tools.AntTask', classpath: buildscript.configurations.classpath.asPath)
+    dependencies {
+        classpath 'net.sourceforge.fmpp:fmpp:0.9.15'
+        classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.11.0'
+        classpath 'io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.5.3'
+    }
+
+    ant.taskdef(name: 'fmpp', classname: 'fmpp.tools.AntTask', classpath: buildscript.configurations.classpath.asPath)
 }
 
 configurations.all {
@@ -46,48 +46,48 @@ dependencies {
     compile 'org.hdrhistogram:HdrHistogram:2.1.9'
     compile 'org.decimal4j:decimal4j:1.0.1'
     testCompile 'org.mockito:mockito-all:1.10.19'
-    testCompile 'org.assertj:assertj-core:3.4.1' 
+    testCompile 'org.assertj:assertj-core:3.4.1'
     testCompile 'junit:junit:4.12'
 }
 
 uploadArchives {
     repositories {
-       flatDir {
-           dirs 'build/repositories'
-       }
+        flatDir {
+            dirs 'build/repositories'
+        }
     }
 }
 
 def generatedSources = "${buildDir}/generated-src"
 
 task generateSources() << {
-	println "Generating sources...."
-	ant.fmpp(
-		configuration: "src/main/resources/codegen/config/config.fmpp",
-		sourceRoot: "src/main/resources/codegen/templates",
-		outputRoot: generatedSources
-	)
+    println "Generating sources...."
+    ant.fmpp(
+            configuration: "src/main/resources/codegen/config/config.fmpp",
+            sourceRoot: "src/main/resources/codegen/templates",
+            outputRoot: generatedSources
+    )
 }
-	
+
 sourceSets.main.java {
-	srcDirs generatedSources, 'src/main/java'
+    srcDirs generatedSources, 'src/main/java'
 }
 
 license {
     header rootProject.file('src/main/resources/LICENSE.template')
     strictCheck true
-	include "**/*.java"
-	ext.year = Calendar.getInstance().get(Calendar.YEAR)
+    include "**/*.java"
+    ext.year = Calendar.getInstance().get(Calendar.YEAR)
 }
 
-compileJava.dependsOn generateSources,licenseFormat
+compileJava.dependsOn generateSources, licenseFormat
 
 javadoc {
-	options.showFromPackage()
-	options.linkSource()
-	options.links("http://docs.oracle.com/javase/8/docs/api/");
-	options.windowTitle = "fix4j API ${version}"
-	options.overview = "src/main/java/overview.html";
+    options.showFromPackage()
+    options.linkSource()
+    options.links("http://docs.oracle.com/javase/8/docs/api/");
+    options.windowTitle = "fix4j API ${version}"
+    options.overview = "src/main/java/overview.html";
 }
 
 task javadocJar(type: Jar) {
@@ -104,69 +104,71 @@ artifacts {
     archives javadocJar, sourcesJar
 }
 
-gradle.taskGraph.whenReady { graph -> if (graph.hasTask(uploadArchives)) {
+gradle.taskGraph.whenReady { graph ->
+    if (graph.hasTask(uploadArchives)) {
 
-    allprojects {
-        apply plugin: 'signing'
-        apply plugin: 'maven'
-		apply plugin: 'io.codearte.nexus-staging'
-		
-        // Signature of artifacts
-        signing {
-            sign configurations.archives
-        }
+        allprojects {
+            apply plugin: 'signing'
+            apply plugin: 'maven'
+            apply plugin: 'io.codearte.nexus-staging'
 
-        // OSSRH publication
-        uploadArchives {
-            repositories {
-            	mavenDeployer {
-            		beforeDeployment { 
-            			MavenDeployment deployment -> signing.signPom(deployment)
-            		}
-            		repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-            			authentication(userName: ossrhUsername, password: ossrhPassword)
-            		}
-            		snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-            			authentication(userName: ossrhUsername, password: ossrhPassword)
-            		}
-            		
-            		pom.project {
-						name 'fix4j'
-						packaging 'jar'
-						// optionally artifactId can be defined here 
-						description 'Java low latency zero garbage FIX engine'
-						url 'http://fix4j.org'
+            // Signature of artifacts
+            signing {
+                sign configurations.archives
+            }
 
-        				scm {
-        					connection 'scm:git:git@github.com:tools4j/fix4j.git'
-        					developerConnection 'scm:git:git@github.com:tools4j/fix4j.git'
-        					url 'git@github.com:tools4j/fix4j.git'
-        				}
-        				licenses {
-        					license {
-        						name 'MIT License'
-        						url 'http://opensource.org/licenses/MIT'
-        					}
-        				}
-        				
-        				developers {
-        					developer {
-        						id 'terzerm'
-        						name 'Marco Terzer'
-        					}
-        					developer {
-        						id 'harukizaemon'
-        						name 'Simon Harris'
-        					}
-        				}
-        			}
-        		}
+            // OSSRH publication
+            uploadArchives {
+                repositories {
+                    mavenDeployer {
+                        beforeDeployment {
+                            MavenDeployment deployment -> signing.signPom(deployment)
+                        }
+                        repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                            authentication(userName: ossrhUsername, password: ossrhPassword)
+                        }
+                        snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                            authentication(userName: ossrhUsername, password: ossrhPassword)
+                        }
+
+                        pom.project {
+                            name 'fix4j'
+                            packaging 'jar'
+                            // optionally artifactId can be defined here
+                            description 'Java low latency zero garbage FIX engine'
+                            url 'http://fix4j.org'
+
+                            scm {
+                                connection 'scm:git:git@github.com:tools4j/fix4j.git'
+                                developerConnection 'scm:git:git@github.com:tools4j/fix4j.git'
+                                url 'git@github.com:tools4j/fix4j.git'
+                            }
+                            licenses {
+                                license {
+                                    name 'MIT License'
+                                    url 'http://opensource.org/licenses/MIT'
+                                }
+                            }
+
+                            developers {
+                                developer {
+                                    id 'terzerm'
+                                    name 'Marco Terzer'
+                                }
+                                developer {
+                                    id 'harukizaemon'
+                                    name 'Simon Harris'
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            nexusStaging {
+                username = ossrhUsername
+                password = ossrhPassword
             }
         }
-
-		nexusStaging {
-		    username = ossrhUsername
-		    password = ossrhPassword
-		}
     }
-}}
+}

@@ -1,18 +1,18 @@
 /**
  * The MIT License (MIT)
- *
+ * <p>
  * Copyright (c) 2016 fix4j.org (tools4j.org)
- *
+ * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * <p>
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- *
+ * <p>
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -45,7 +45,7 @@ public class TcpConnectionAcceptor implements TcpConnection {
 
     private SocketChannel socketChannel;
 
-    private ByteChannelBuffer byteChannelBuffer;
+    private final OffHeapBuffer offHeapBuffer;
 
     public TcpConnectionAcceptor(final String hostname,
                                  final int port,
@@ -55,6 +55,7 @@ public class TcpConnectionAcceptor implements TcpConnection {
         this.port = port;
         this.tcpExceptionHandler = tcpExceptionHandler;
         this.tcpConnectionHandler = tcpConnectionHandler;
+        this.offHeapBuffer = new UnsafeBuffer(UnsafeBuffer.TEN_MB, tcpExceptionHandler);
     }
 
     public TcpConnection establish(final FixSession fixSession) {
@@ -83,7 +84,6 @@ public class TcpConnectionAcceptor implements TcpConnection {
         try {
             socketChannel = serverSocketChannel.accept();
             socketChannel.configureBlocking(false);
-            byteChannelBuffer = new ByteChannelBuffer(socketChannel);
         } catch (IOException e) {
             tcpExceptionHandler.onError(this, e);
         }
@@ -95,12 +95,21 @@ public class TcpConnectionAcceptor implements TcpConnection {
     }
 
     @Override
-    public Buffer buffer() {
-        return byteChannelBuffer;
+    public boolean isConnected() {
+        return socketChannel != null && socketChannel.isConnected();
     }
 
     @Override
-    public boolean isConnected() {
-        return socketChannel != null && socketChannel.isConnected();
+    public TcpConnection readInto(MessageLog messageLog) {
+        offHeapBuffer.readFrom(socketChannel);
+        if (offHeapBuffer.bytesToWrite() > 0) {
+            messageLog.readFrom(offHeapBuffer);
+        }
+        return this;
+    }
+
+    @Override
+    public TcpConnection writeFrom(MessageLog messageLog) {
+        return this;
     }
 }

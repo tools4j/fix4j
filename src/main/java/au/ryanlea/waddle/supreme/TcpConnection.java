@@ -36,7 +36,10 @@ public interface TcpConnection {
 
     SocketChannel socketChannel();
 
-    Buffer buffer();
-
     boolean isConnected();
+
+    TcpConnection readInto(MessageLog messageLog);
+
+    TcpConnection writeFrom(MessageLog messageLog);
+
 }

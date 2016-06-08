@@ -28,7 +28,7 @@ import java.io.IOException;
 /**
  * Created by ryan on 1/06/16.
  */
-public interface TcpExceptionHandler {
+public interface TcpExceptionHandler extends ExceptionHandler {
 
     void onError(IOException ioe);
 
@@ -36,6 +36,11 @@ public interface TcpExceptionHandler {
 
     static TcpExceptionHandler throwing() {
         return new TcpExceptionHandler() {
+            @Override
+            public void onError(Exception e) {
+                throw new SupremeWaddleException(e);
+            }
+
             @Override
             public void onError(IOException ioe) {
                 throw new SupremeWaddleException(ioe);

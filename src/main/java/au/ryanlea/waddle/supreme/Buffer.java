@@ -29,5 +29,7 @@ package au.ryanlea.waddle.supreme;
 public interface Buffer {
     long remaining();
 
-    byte getByte(int pos);
+    byte getByte(int idx);
+
+    Buffer putByte(byte b);
 }

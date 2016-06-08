@@ -31,4 +31,8 @@ public interface MessageLog {
     MessageLog readFrom(Buffer buffer);
 
     MessageLog writeTo(Buffer buffer);
+
+    MessageLog readFrom(OffHeapBuffer buffer);
+
+    MessageLog writeTo(OffHeapBuffer buffer);
 }
