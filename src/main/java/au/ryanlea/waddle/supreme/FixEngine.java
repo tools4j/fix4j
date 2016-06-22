@@ -40,8 +40,6 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class FixEngine {
 
-    private final AtomicReference<FixSession> fixSessionToAdd = new AtomicReference<>();
-
     private final AtomicReference<FixSessionConnection> fixSessionConnectionToAdd = new AtomicReference<>();
 
     private final List<FixSession> fixSessions = new ArrayList<>();

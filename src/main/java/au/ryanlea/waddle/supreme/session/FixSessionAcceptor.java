@@ -1,6 +1,5 @@
 package au.ryanlea.waddle.supreme.session;
 
-import au.ryanlea.waddle.supreme.FixEngine;
 import au.ryanlea.waddle.supreme.MessageLog;
 import au.ryanlea.waddle.supreme.net.SocketConnection;
 import au.ryanlea.waddle.supreme.net.TcpConnectionAcceptor;
@@ -14,18 +13,14 @@ public class FixSessionAcceptor implements FixSessionConnection {
 
     private final TcpConnectionAcceptor tcpConnection;
 
-    private final FixEngine fixEngine;
-
     private final MessageLog inbound;
 
     private final MessageLog outbound;
 
     public FixSessionAcceptor(final TcpConnectionAcceptor tcpConnection,
-                              final FixEngine fixEngine,
                               final MessageLog inbound,
                               final MessageLog outbound) {
         this.tcpConnection = tcpConnection;
-        this.fixEngine = fixEngine;
         this.inbound = inbound;
         this.outbound = outbound;
     }
@@ -40,7 +35,15 @@ public class FixSessionAcceptor implements FixSessionConnection {
     public FixSessionConnection connect(Consumer<FixSession> onFixSession) {
         final SocketConnection socketConnection = tcpConnection.connect();
         // todo - inbound and outbound need to be constructed based upon something - or anything
-        onFixSession.accept(new FixSession(socketConnection, inbound, outbound));
+        onFixSession.accept(new FixSession(socketConnection, new AcceptorSessionLifecycle(), inbound, outbound));
         return this;
+    }
+
+    private class AcceptorSessionLifecycle implements SessionLifecycle {
+
+        @Override
+        public void manage(FixSession fixSession) {
+
+        }
     }
 }

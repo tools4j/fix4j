@@ -36,14 +36,18 @@ public class FixSession {
 
     private final SocketConnection socketConnection;
 
+    private final SessionLifecycle sessionLifecycle;
+
     private final MessageLog inbound;
 
     private final MessageLog outbound;
 
-    private boolean loggedOn;
-
-    public FixSession(final SocketConnection socketConnection, final MessageLog inbound, final MessageLog outbound) {
+    public FixSession(final SocketConnection socketConnection,
+                      final SessionLifecycle sessionLifecycle,
+                      final MessageLog inbound,
+                      final MessageLog outbound) {
         this.socketConnection = socketConnection;
+        this.sessionLifecycle = sessionLifecycle;
         this.inbound = inbound;
         this.outbound = outbound;
     }
@@ -64,18 +68,13 @@ public class FixSession {
     }
 
     public FixSession process() {
-        // readFrom messages from inbound
+        // read messages from inbound
 
         // add heartbeat or test request if required.
-        logon();
+        sessionLifecycle.manage(this);
 
+        // write messages to outbound
         return this;
-    }
-
-    private void logon() {
-        if (socketConnection.isConnected() && !loggedOn) {
-            send(new StringMessage("logon"));
-        }
     }
 
 }
