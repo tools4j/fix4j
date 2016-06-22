@@ -23,6 +23,9 @@
  */
 package au.ryanlea.waddle.supreme;
 
+import au.ryanlea.waddle.supreme.net.TcpConnectionAcceptor;
+import au.ryanlea.waddle.supreme.net.TcpConnectionHandler;
+import au.ryanlea.waddle.supreme.net.TcpExceptionHandler;
 import org.junit.Test;
 
 import java.io.IOException;

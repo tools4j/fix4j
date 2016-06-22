@@ -21,36 +21,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package au.ryanlea.waddle.supreme;
+package au.ryanlea.waddle.supreme.net;
 
-import java.io.IOException;
+import au.ryanlea.waddle.supreme.session.FixSessionConnection;
+import au.ryanlea.waddle.supreme.MessageLog;
+
+import java.nio.channels.SocketChannel;
 
 /**
  * Created by ryan on 1/06/16.
  */
-public interface TcpExceptionHandler extends ExceptionHandler {
+public interface TcpConnection {
 
-    void onError(IOException ioe);
+    TcpConnection establish(FixSessionConnection fixSessionConnection);
 
-    void onError(TcpConnection tcpConnection, IOException ioe);
-
-    static TcpExceptionHandler throwing() {
-        return new TcpExceptionHandler() {
-            @Override
-            public void onError(Exception e) {
-                throw new SupremeWaddleException(e);
-            }
-
-            @Override
-            public void onError(IOException ioe) {
-                throw new SupremeWaddleException(ioe);
-            }
-
-            @Override
-            public void onError(TcpConnection tcpConnection, IOException ioe) {
-                throw new SupremeWaddleException(ioe);
-            }
-        };
-    }
+    SocketConnection connect();
 
 }

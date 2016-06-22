@@ -23,6 +23,10 @@
  */
 package au.ryanlea.waddle.supreme;
 
+import au.ryanlea.waddle.supreme.net.TcpConnectionHandler;
+import au.ryanlea.waddle.supreme.session.FixSession;
+import au.ryanlea.waddle.supreme.session.FixSessionConnection;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -38,7 +42,11 @@ public class FixEngine {
 
     private final AtomicReference<FixSession> fixSessionToAdd = new AtomicReference<>();
 
+    private final AtomicReference<FixSessionConnection> fixSessionConnectionToAdd = new AtomicReference<>();
+
     private final List<FixSession> fixSessions = new ArrayList<>();
+
+    private final List<FixSessionConnection> fixSessionConnections = new ArrayList<>();
 
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
@@ -53,23 +61,19 @@ public class FixEngine {
         this.exceptionHandler = exceptionHandler;
     }
 
-    public FixEngine register(FixSession fixSession) {
+    public FixEngine register(FixSessionConnection fixSessionConnection) {
         while (true) {
-            if (fixSessionToAdd.compareAndSet(null, fixSession)) {
+            if (fixSessionConnectionToAdd.compareAndSet(null, fixSessionConnection)) {
                 return this;
             }
         }
-    }
-
-    public Iterable<FixSession> fixSessions() {
-        return fixSessions;
     }
 
     public FixEngine start() {
         executorService.submit(() -> {
             try {
                 while (!terminated.get()) {
-                    addNewFixSession();
+                    addNewFixSessionConnection();
 
                     // establish new sessions
                     establishFixSessions();
@@ -91,16 +95,16 @@ public class FixEngine {
     }
 
     private void establishFixSessions() {
-        for (int i = 0; i < fixSessions.size(); i++) {
-            fixSessions.get(i).establish();
+        for (int i = 0; i < fixSessionConnections.size(); i++) {
+            fixSessionConnections.get(i).establish();
         }
-        tcpConnectionHandler.selectAndConnect();
+        tcpConnectionHandler.selectAndConnect(fixSessions::add);
     }
 
-    private void addNewFixSession() {
-        FixSession fixSession = fixSessionToAdd.getAndSet(null);
-        if (fixSession != null) {
-            fixSessions.add(fixSession);
+    private void addNewFixSessionConnection() {
+        FixSessionConnection fixSessionConnection = fixSessionConnectionToAdd.getAndSet(null);
+        if (fixSessionConnection != null) {
+            fixSessionConnections.add(fixSessionConnection);
         }
     }
 

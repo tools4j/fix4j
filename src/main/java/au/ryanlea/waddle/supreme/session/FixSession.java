@@ -21,14 +21,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package au.ryanlea.waddle.supreme;
+package au.ryanlea.waddle.supreme.session;
+
+import au.ryanlea.waddle.supreme.Message;
+import au.ryanlea.waddle.supreme.MessageLog;
+import au.ryanlea.waddle.supreme.StringMessage;
+import au.ryanlea.waddle.supreme.net.SocketConnection;
+import au.ryanlea.waddle.supreme.net.TcpConnection;
 
 /**
  * Created by ryan on 2/06/16.
  */
 public class FixSession {
 
-    private final TcpConnection tcpConnection;
+    private final SocketConnection socketConnection;
 
     private final MessageLog inbound;
 
@@ -36,15 +42,10 @@ public class FixSession {
 
     private boolean loggedOn;
 
-    public FixSession(final TcpConnection tcpConnection, final MessageLog inbound, final MessageLog outbound) {
-        this.tcpConnection = tcpConnection;
+    public FixSession(final SocketConnection socketConnection, final MessageLog inbound, final MessageLog outbound) {
+        this.socketConnection = socketConnection;
         this.inbound = inbound;
         this.outbound = outbound;
-    }
-
-    public FixSession establish() {
-        tcpConnection.establish(this);
-        return this;
     }
 
     public FixSession send(Message message) {
@@ -53,16 +54,12 @@ public class FixSession {
     }
 
     public FixSession fromWire() {
-        tcpConnection.readInto(inbound);
+        socketConnection.readInto(inbound);
         return this;
     }
 
-    public TcpConnection tcpConnection() {
-        return tcpConnection;
-    }
-
     public FixSession toWire() {
-        tcpConnection.writeFrom(outbound);
+        socketConnection.writeFrom(outbound);
         return this;
     }
 
@@ -76,7 +73,7 @@ public class FixSession {
     }
 
     private void logon() {
-        if (tcpConnection.isConnected() && !loggedOn) {
+        if (socketConnection.isConnected() && !loggedOn) {
             send(new StringMessage("logon"));
         }
     }

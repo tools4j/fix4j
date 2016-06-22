@@ -23,6 +23,13 @@
  */
 package au.ryanlea.waddle.supreme;
 
+import au.ryanlea.waddle.supreme.net.TcpConnectionAcceptor;
+import au.ryanlea.waddle.supreme.net.TcpConnectionHandler;
+import au.ryanlea.waddle.supreme.net.TcpConnectionInitiator;
+import au.ryanlea.waddle.supreme.net.TcpExceptionHandler;
+import au.ryanlea.waddle.supreme.session.FixSession;
+import au.ryanlea.waddle.supreme.session.FixSessionAcceptor;
+import au.ryanlea.waddle.supreme.session.FixSessionInitiator;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,6 +39,7 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.in;
 import static org.mockito.Mockito.mock;
 
 @Ignore
@@ -44,19 +52,6 @@ public class FixEngineTest {
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Test
-    public void registerSession() throws IOException {
-        final TcpExceptionHandler throwing = TcpExceptionHandler.throwing();
-        final TcpConnectionHandler tcpConnectionHandler = new TcpConnectionHandler(throwing);
-        final FixEngine fixEngine = new FixEngine(tcpConnectionHandler, ExceptionHandler.logging());
-        final TcpConnectionAcceptor tcpConnectionAcceptor = new TcpConnectionAcceptor("localhost", 0, throwing, tcpConnectionHandler);
-        final MessageLog inbound = mock(MessageLog.class);
-        final MessageLog outbound = mock(MessageLog.class);
-        final FixSession acceptor = new FixSession(tcpConnectionAcceptor, inbound, outbound);
-        fixEngine.register(acceptor);
-        assertThat(fixEngine.fixSessions()).contains(acceptor);
-    }
-
-    @Test
     public void start() throws IOException {
         final TcpExceptionHandler tcpExceptionHandler = TcpExceptionHandler.throwing();
         final TcpConnectionHandler tcpConnectionHandler = new TcpConnectionHandler(tcpExceptionHandler);
@@ -66,7 +61,7 @@ public class FixEngineTest {
         final TcpConnectionAcceptor tcpConnectionAcceptor = new TcpConnectionAcceptor("localhost", 0, tcpExceptionHandler, tcpConnectionHandler);
         final MessageLog acceptorInbound = new UnsafeMessageLog(temporaryFolder.newFile("acceptor-inbound.log").getAbsolutePath(), TWO_MB, ExceptionHandler.throwing());
         final MessageLog acceptorOutbound = new UnsafeMessageLog(temporaryFolder.newFile("acceptor-outbound.log").getAbsolutePath(), TWO_MB, ExceptionHandler.throwing());
-        final FixSession acceptor = new FixSession(tcpConnectionAcceptor, acceptorInbound, acceptorOutbound);
+        final FixSessionAcceptor acceptor = new FixSessionAcceptor(tcpConnectionAcceptor, fixEngine, acceptorInbound, acceptorOutbound);
         fixEngine.register(acceptor);
 
         final long time = System.currentTimeMillis();
@@ -80,7 +75,7 @@ public class FixEngineTest {
         final TcpConnectionInitiator tcpConnectionInitiator = new TcpConnectionInitiator("localhost", tcpConnectionAcceptor.serverSocketChannel().socket().getLocalPort(), tcpExceptionHandler, tcpConnectionHandler);
         final MessageLog initiatorInbound = new UnsafeMessageLog(temporaryFolder.newFile("initiator-inbound.log").getAbsolutePath(), TWO_MB, ExceptionHandler.throwing());
         final MessageLog initiatorOutbound = new UnsafeMessageLog(temporaryFolder.newFile("initiator-outbound.log").getAbsolutePath(), TWO_MB, ExceptionHandler.throwing());
-        final FixSession initiator = new FixSessionInitiator(tcpConnectionInitiator, initiatorInbound, initiatorOutbound);
+        final FixSessionInitiator initiator = new FixSessionInitiator(tcpConnectionInitiator, fixEngine, initiatorInbound, initiatorOutbound);
         fixEngine.register(initiator);
 
         fixEngine.terminate(120, TimeUnit.SECONDS);
