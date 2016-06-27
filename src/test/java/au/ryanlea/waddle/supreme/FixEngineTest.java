@@ -23,13 +23,16 @@
  */
 package au.ryanlea.waddle.supreme;
 
+import au.ryanlea.waddle.supreme.log.LogEntry;
+import au.ryanlea.waddle.supreme.log.MessageLog;
+import au.ryanlea.waddle.supreme.log.UnsafeMessageLog;
 import au.ryanlea.waddle.supreme.net.TcpConnectionAcceptor;
 import au.ryanlea.waddle.supreme.net.TcpConnectionHandler;
 import au.ryanlea.waddle.supreme.net.TcpConnectionInitiator;
 import au.ryanlea.waddle.supreme.net.TcpExceptionHandler;
-import au.ryanlea.waddle.supreme.session.FixSession;
 import au.ryanlea.waddle.supreme.session.FixSessionAcceptor;
 import au.ryanlea.waddle.supreme.session.FixSessionInitiator;
+import au.ryanlea.waddle.supreme.spec.Fix4SessionLifecycle;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -37,9 +40,9 @@ import org.junit.rules.TemporaryFolder;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.in;
 import static org.mockito.Mockito.mock;
 
 @Ignore
@@ -61,7 +64,12 @@ public class FixEngineTest {
         final TcpConnectionAcceptor tcpConnectionAcceptor = new TcpConnectionAcceptor("localhost", 0, tcpExceptionHandler, tcpConnectionHandler);
         final MessageLog acceptorInbound = new UnsafeMessageLog(temporaryFolder.newFile("acceptor-inbound.log").getAbsolutePath(), TWO_MB, ExceptionHandler.throwing());
         final MessageLog acceptorOutbound = new UnsafeMessageLog(temporaryFolder.newFile("acceptor-outbound.log").getAbsolutePath(), TWO_MB, ExceptionHandler.throwing());
-        final FixSessionAcceptor acceptor = new FixSessionAcceptor(tcpConnectionAcceptor, fixEngine, acceptorInbound, acceptorOutbound);
+        final FixSessionAcceptor acceptor = new FixSessionAcceptor(
+                tcpConnectionAcceptor,
+                acceptorInbound,
+                acceptorOutbound,
+                () -> new Fix4SessionLifecycle.Acceptor(),
+                AcceptorApplication::new);
         fixEngine.register(acceptor);
 
         final long time = System.currentTimeMillis();
@@ -75,7 +83,18 @@ public class FixEngineTest {
         final TcpConnectionInitiator tcpConnectionInitiator = new TcpConnectionInitiator("localhost", tcpConnectionAcceptor.serverSocketChannel().socket().getLocalPort(), tcpExceptionHandler, tcpConnectionHandler);
         final MessageLog initiatorInbound = new UnsafeMessageLog(temporaryFolder.newFile("initiator-inbound.log").getAbsolutePath(), TWO_MB, ExceptionHandler.throwing());
         final MessageLog initiatorOutbound = new UnsafeMessageLog(temporaryFolder.newFile("initiator-outbound.log").getAbsolutePath(), TWO_MB, ExceptionHandler.throwing());
-        final FixSessionInitiator initiator = new FixSessionInitiator(tcpConnectionInitiator, fixEngine, initiatorInbound, initiatorOutbound);
+        final FixSessionInitiator initiator = new FixSessionInitiator(
+                tcpConnectionInitiator,
+                initiatorInbound,
+                initiatorOutbound,
+                () -> new Fix4SessionLifecycle.Initiator(sessionMessageType -> {
+                    switch (sessionMessageType) {
+                        case LOGON:
+                            return new StringMessage("logon");
+                    }
+                    return null;
+                }),
+                InitiatingApplication::new);
         fixEngine.register(initiator);
 
         fixEngine.terminate(120, TimeUnit.SECONDS);
@@ -87,6 +106,32 @@ public class FixEngineTest {
         }
 
         return acceptor.serverSocketChannel().socket().getLocalPort();
+    }
+
+    private static class InitiatingApplication implements Application, Consumer<LogEntry> {
+
+        @Override
+        public Consumer<LogEntry> consume() {
+            return this;
+        }
+
+        @Override
+        public void accept(LogEntry logEntry) {
+
+        }
+    }
+
+    private static class AcceptorApplication implements Application, Consumer<LogEntry> {
+
+        @Override
+        public Consumer<LogEntry> consume() {
+            return this;
+        }
+
+        @Override
+        public void accept(LogEntry logEntry) {
+
+        }
     }
 
 }

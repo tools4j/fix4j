@@ -24,6 +24,7 @@
 package au.ryanlea.waddle.supreme;
 
 import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 
 /**
  * Created by ryan on 6/06/16.
@@ -39,6 +40,8 @@ public interface OffHeapBuffer {
     OffHeapBuffer readFrom(Buffer buffer, Header header);
 
     OffHeapBuffer writeTo(Buffer buffer);
+
+    OffHeapBuffer writeTo(WritableByteChannel writableByteChannel);
 
     int bytesToRead();
 

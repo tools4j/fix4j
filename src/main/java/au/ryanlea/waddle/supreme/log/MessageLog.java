@@ -21,7 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package au.ryanlea.waddle.supreme;
+package au.ryanlea.waddle.supreme.log;
+
+import au.ryanlea.waddle.supreme.Buffer;
+import au.ryanlea.waddle.supreme.OffHeapBuffer;
 
 /**
  * Created by ryan on 2/06/16.
@@ -35,4 +38,6 @@ public interface MessageLog {
     MessageLog readFrom(OffHeapBuffer buffer);
 
     MessageLog writeTo(OffHeapBuffer buffer);
+
+    Iterable<LogEntry> logEntries();
 }

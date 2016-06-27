@@ -23,11 +23,13 @@
  */
 package au.ryanlea.waddle.supreme.session;
 
-import au.ryanlea.waddle.supreme.MessageLog;
+import au.ryanlea.waddle.supreme.Application;
+import au.ryanlea.waddle.supreme.log.MessageLog;
 import au.ryanlea.waddle.supreme.net.SocketConnection;
 import au.ryanlea.waddle.supreme.net.TcpConnectionInitiator;
 
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * Created by ryan on 3/06/16.
@@ -40,12 +42,20 @@ public class FixSessionInitiator implements FixSessionConnection {
 
     private final MessageLog outbound;
 
+    private final Supplier<SessionLifecycle> sessionLifecycleSupplier;
+
+    private final Supplier<Application> applicationSupplier;
+
     public FixSessionInitiator(final TcpConnectionInitiator tcpConnection,
                                final MessageLog inbound,
-                               final MessageLog outbound) {
+                               final MessageLog outbound,
+                               final Supplier<SessionLifecycle> sessionLifecycleSupplier,
+                               final Supplier<Application> applicationSupplier) {
         this.tcpConnection = tcpConnection;
         this.inbound = inbound;
         this.outbound = outbound;
+        this.sessionLifecycleSupplier = sessionLifecycleSupplier;
+        this.applicationSupplier = applicationSupplier;
     }
 
     @Override
@@ -58,16 +68,13 @@ public class FixSessionInitiator implements FixSessionConnection {
     public FixSessionConnection connect(Consumer<FixSession> onFixSession) {
         final SocketConnection socketConnection = tcpConnection.connect();
         // todo - inbound and outbound need to be constructed based upon something - or anything
-        onFixSession.accept(new FixSession(socketConnection, new InitiatorSessionLifecycle(), inbound, outbound));
+        onFixSession.accept(new FixSession(
+                socketConnection,
+                sessionLifecycleSupplier.get(),
+                applicationSupplier.get(),
+                inbound,
+                outbound));
         return this;
-    }
-
-    private class InitiatorSessionLifecycle implements SessionLifecycle {
-
-        @Override
-        public void manage(FixSession fixSession) {
-
-        }
     }
 
 }

@@ -24,9 +24,6 @@
 package au.ryanlea.waddle.supreme.net;
 
 import au.ryanlea.waddle.supreme.session.FixSessionConnection;
-import au.ryanlea.waddle.supreme.MessageLog;
-
-import java.nio.channels.SocketChannel;
 
 /**
  * Created by ryan on 1/06/16.

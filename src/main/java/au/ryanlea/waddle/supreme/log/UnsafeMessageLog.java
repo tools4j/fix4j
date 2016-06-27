@@ -21,12 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package au.ryanlea.waddle.supreme;
+package au.ryanlea.waddle.supreme.log;
+
+import au.ryanlea.waddle.supreme.Buffer;
+import au.ryanlea.waddle.supreme.ExceptionHandler;
+import au.ryanlea.waddle.supreme.OffHeapBuffer;
+import au.ryanlea.waddle.supreme.UnsafeBuffer;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
 
 /**
  * Created by ryan on 3/06/16.
@@ -70,7 +76,13 @@ public class UnsafeMessageLog implements MessageLog {
 
     @Override
     public MessageLog writeTo(OffHeapBuffer buffer) {
-        return null;
+        buffer.readFrom(this.buffer, offHeapBuffer -> 0);
+        return this;
+    }
+
+    @Override
+    public Iterable<LogEntry> logEntries() {
+        return new ArrayList<>();
     }
 
     public UnsafeMessageLog log(byte[] bytes) {

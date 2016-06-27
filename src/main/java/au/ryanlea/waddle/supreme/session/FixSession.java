@@ -23,11 +23,10 @@
  */
 package au.ryanlea.waddle.supreme.session;
 
+import au.ryanlea.waddle.supreme.Application;
 import au.ryanlea.waddle.supreme.Message;
-import au.ryanlea.waddle.supreme.MessageLog;
-import au.ryanlea.waddle.supreme.StringMessage;
+import au.ryanlea.waddle.supreme.log.MessageLog;
 import au.ryanlea.waddle.supreme.net.SocketConnection;
-import au.ryanlea.waddle.supreme.net.TcpConnection;
 
 /**
  * Created by ryan on 2/06/16.
@@ -38,16 +37,20 @@ public class FixSession {
 
     private final SessionLifecycle sessionLifecycle;
 
+    private final Application application;
+
     private final MessageLog inbound;
 
     private final MessageLog outbound;
 
     public FixSession(final SocketConnection socketConnection,
                       final SessionLifecycle sessionLifecycle,
+                      final Application application,
                       final MessageLog inbound,
                       final MessageLog outbound) {
         this.socketConnection = socketConnection;
         this.sessionLifecycle = sessionLifecycle;
+        this.application = application;
         this.inbound = inbound;
         this.outbound = outbound;
     }
@@ -69,11 +72,10 @@ public class FixSession {
 
     public FixSession process() {
         // read messages from inbound
+        inbound.logEntries().forEach(sessionLifecycle.consume().andThen(application.consume()));
 
         // add heartbeat or test request if required.
         sessionLifecycle.manage(this);
-
-        // write messages to outbound
         return this;
     }
 

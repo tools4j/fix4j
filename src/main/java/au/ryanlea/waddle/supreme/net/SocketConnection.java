@@ -1,7 +1,7 @@
 package au.ryanlea.waddle.supreme.net;
 
 import au.ryanlea.waddle.supreme.ExceptionHandler;
-import au.ryanlea.waddle.supreme.MessageLog;
+import au.ryanlea.waddle.supreme.log.MessageLog;
 import au.ryanlea.waddle.supreme.OffHeapBuffer;
 import au.ryanlea.waddle.supreme.UnsafeBuffer;
 
@@ -19,25 +19,33 @@ public interface SocketConnection {
     boolean isConnected();
 
     class Connected implements SocketConnection {
+
         private final SocketChannel socketChannel;
 
-        private final OffHeapBuffer offHeapBuffer;
+        private final OffHeapBuffer inbound;
+
+        private final OffHeapBuffer outbound;
 
         public Connected(final SocketChannel socketChannel,
                                 final ExceptionHandler exceptionHandler) {
             this.socketChannel = socketChannel;
-            this.offHeapBuffer = new UnsafeBuffer(UnsafeBuffer.TEN_MB, exceptionHandler);
+            this.inbound = new UnsafeBuffer(UnsafeBuffer.TEN_MB, exceptionHandler);
+            this.outbound = new UnsafeBuffer(UnsafeBuffer.TEN_MB, exceptionHandler);
         }
 
         public SocketConnection readInto(MessageLog messageLog) {
-            offHeapBuffer.readFrom(socketChannel);
-            if (offHeapBuffer.bytesToWrite() > 0) {
-                messageLog.readFrom(offHeapBuffer);
+            inbound.readFrom(socketChannel);
+            if (inbound.bytesToRead() > 0) {
+                messageLog.readFrom(inbound);
             }
             return this;
         }
 
         public SocketConnection writeFrom(MessageLog messageLog) {
+            messageLog.writeTo(outbound);
+            if (outbound.bytesToRead() > 0) {
+                outbound.writeTo(socketChannel);
+            }
             return this;
         }
 

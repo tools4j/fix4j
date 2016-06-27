@@ -23,6 +23,7 @@
  */
 package au.ryanlea.waddle.supreme;
 
+import au.ryanlea.waddle.supreme.log.UnsafeMessageLog;
 import org.HdrHistogram.ConcurrentHistogram;
 import org.HdrHistogram.Histogram;
 import org.junit.Rule;

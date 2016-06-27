@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 
 /**
  * Created by ryan on 6/06/16.
@@ -82,8 +83,23 @@ public class UnsafeBuffer implements OffHeapBuffer {
     @Override
     public OffHeapBuffer readFrom(ReadableByteChannel readableByteChannel) {
         try {
+            buffer.position(writePosition);
+            buffer.limit(capacity);
             int bytes = readableByteChannel.read(buffer);
             writePosition += bytes;
+        } catch (IOException e) {
+            exceptionHandler.onError(e);
+        }
+        return this;
+    }
+
+    @Override
+    public OffHeapBuffer writeTo(WritableByteChannel writableByteChannel) {
+        try {
+            buffer.position(readPosition);
+            buffer.limit(writePosition);
+            int bytes = writableByteChannel.write(buffer);
+            readPosition += bytes;
         } catch (IOException e) {
             exceptionHandler.onError(e);
         }
@@ -121,35 +137,41 @@ public class UnsafeBuffer implements OffHeapBuffer {
 
     @Override
     public OffHeapBuffer readFrom(final OffHeapBuffer buffer, final Header header) {
-        long headerBytes = header.mark(this);
-        long address = writeAddress() + headerBytes;
         int bytesToRead = buffer.bytesToRead();
-        UNSAFE.copyMemory(buffer.readAddress(), address, bytesToRead);
-        writePosition += headerBytes + bytesToRead;
-        buffer.readSkip(bytesToRead);
+        if (bytesToRead > 0) {
+            long headerBytes = header.mark(this);
+            long address = writeAddress() + headerBytes;
+            UNSAFE.copyMemory(buffer.readAddress(), address, bytesToRead);
+            writePosition += headerBytes + bytesToRead;
+            buffer.readSkip(bytesToRead);
+        }
         return this;
     }
 
     @Override
     public OffHeapBuffer readFrom(byte[] bytes, Header header) {
-        long headerBytes = header.mark(this);
-        long address = writeAddress() + headerBytes;
         int bytesToRead = bytes.length;
-        UNSAFE.copyMemory(bytes, Unsafe.ARRAY_BYTE_BASE_OFFSET, null, address, bytesToRead);
-        writePosition += headerBytes + bytesToRead;
+        if (bytesToRead > 0) {
+            long headerBytes = header.mark(this);
+            long address = writeAddress() + headerBytes;
+            UNSAFE.copyMemory(bytes, Unsafe.ARRAY_BYTE_BASE_OFFSET, null, address, bytesToRead);
+            writePosition += headerBytes + bytesToRead;
+        }
         return this;
     }
 
     @Override
     public OffHeapBuffer readFrom(Buffer buffer, Header header) {
-        long headerBytes = header.mark(this);
-        long address = writeAddress() + headerBytes;
         long bytesToRead = buffer.remaining();
-        int i;
-        for (i = 0; i < bytesToRead; i++) {
-            UNSAFE.putByte(address + i, buffer.getByte(i));
+        if (bytesToRead > 0) {
+            long headerBytes = header.mark(this);
+            long address = writeAddress() + headerBytes;
+            int i;
+            for (i = 0; i < bytesToRead; i++) {
+                UNSAFE.putByte(address + i, buffer.getByte(i));
+            }
+            writePosition += headerBytes + i;
         }
-        writePosition += headerBytes + i;
         return this;
     }
 

@@ -23,10 +23,6 @@
  */
 package au.ryanlea.waddle.supreme.net;
 
-import au.ryanlea.waddle.supreme.session.FixSession;
-import au.ryanlea.waddle.supreme.MessageLog;
-import au.ryanlea.waddle.supreme.OffHeapBuffer;
-import au.ryanlea.waddle.supreme.UnsafeBuffer;
 import au.ryanlea.waddle.supreme.session.FixSessionConnection;
 
 import java.io.IOException;

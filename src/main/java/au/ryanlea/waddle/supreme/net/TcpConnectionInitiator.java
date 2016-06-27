@@ -24,7 +24,6 @@
 package au.ryanlea.waddle.supreme.net;
 
 import au.ryanlea.waddle.supreme.session.FixSessionConnection;
-import au.ryanlea.waddle.supreme.MessageLog;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
