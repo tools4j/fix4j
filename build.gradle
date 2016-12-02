@@ -1,24 +1,3 @@
-apply plugin: 'java'
-apply plugin: 'license'
-
-sourceCompatibility = 1.8
-group = "org.fix4j"
-version = '1.0.1-SNAPSHOT'
-archivesBaseName = "fix4j-engine"
-
-jar {
-    manifest {
-        attributes 'Implementation-Title': 'fix4j', 'Implementation-Version': version
-    }
-}
-
-repositories {
-    mavenCentral()
-    maven {
-        url "https://oss.sonatype.org/content/repositories/snapshots/"
-    }
-}
-
 buildscript {
     repositories {
         mavenCentral()
@@ -26,148 +5,184 @@ buildscript {
     }
 
     dependencies {
-        classpath 'net.sourceforge.fmpp:fmpp:0.9.15'
-        classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.11.0'
         classpath 'io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.5.3'
+        classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.11.0'
     }
 
-    ant.taskdef(name: 'fmpp', classname: 'fmpp.tools.AntTask', classpath: buildscript.configurations.classpath.asPath)
 }
 
-configurations.all {
-    // check for updates every build
-    //resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
-}
+allprojects {
 
-dependencies {
-    compile 'org.jetbrains:annotations:15.0'
-    compile 'org.slf4j:slf4j-api:1.7.21'
-    compile 'org.slf4j:slf4j-simple:1.7.21'
-    compile 'org.hdrhistogram:HdrHistogram:2.1.9'
-    compile 'org.decimal4j:decimal4j:1.0.1'
-    testCompile 'org.mockito:mockito-all:1.10.19'
-    testCompile 'org.assertj:assertj-core:3.4.1'
-    testCompile 'junit:junit:4.12'
-}
+    apply plugin: 'java'
+    apply plugin: 'license'
+    sourceCompatibility = 1.8
+    group = "org.fix4j"
+    version = '1.0.1-SNAPSHOT'
 
-uploadArchives {
-    repositories {
-        flatDir {
-            dirs 'build/repositories'
+    license {
+        header rootProject.file('src/main/resources/LICENSE.template')
+        strictCheck true
+        include "**/*.java"
+        ext.year = Calendar.getInstance().get(Calendar.YEAR)
+    }
+}
+archivesBaseName = "fix4j-engine"
+
+subprojects {
+    buildscript {
+        repositories {
+            mavenCentral()
+            jcenter()
+        }
+
+        dependencies {
+            classpath 'net.sourceforge.fmpp:fmpp:0.9.15'
+        }
+
+    }
+
+    jar {
+        manifest {
+            attributes 'Implementation-Title': 'fix4j', 'Implementation-Version': version
         }
     }
-}
 
-def generatedSources = "${buildDir}/generated-src"
+    repositories {
+        mavenCentral()
+        maven {
+            url "https://oss.sonatype.org/content/repositories/snapshots/"
+        }
+    }
 
-task generateSources() << {
-    println "Generating sources...."
-    ant.fmpp(
-            configuration: "src/main/resources/codegen/config/config.fmpp",
-            sourceRoot: "src/main/resources/codegen/templates",
-            outputRoot: generatedSources
-    )
-}
+    configurations.all {
+        // check for updates every build
+        //resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+    }
 
-sourceSets.main.java {
-    srcDirs generatedSources, 'src/main/java'
-}
+    dependencies {
+        compile 'org.jetbrains:annotations:15.0'
+        compile 'org.slf4j:slf4j-api:1.7.21'
+        compile 'org.slf4j:slf4j-simple:1.7.21'
+        compile 'org.hdrhistogram:HdrHistogram:2.1.9'
+        compile 'org.decimal4j:decimal4j:1.0.1'
+        testCompile 'org.mockito:mockito-all:1.10.19'
+        testCompile 'org.assertj:assertj-core:3.4.1'
+        testCompile 'junit:junit:4.12'
+    }
 
-license {
-    header rootProject.file('src/main/resources/LICENSE.template')
-    strictCheck true
-    include "**/*.java"
-    ext.year = Calendar.getInstance().get(Calendar.YEAR)
-}
-
-compileJava.dependsOn generateSources, licenseFormat
-
-javadoc {
-    options.showFromPackage()
-    options.linkSource()
-    options.links("http://docs.oracle.com/javase/8/docs/api/");
-    options.windowTitle = "fix4j API ${version}"
-    options.overview = "src/main/java/overview.html";
-}
-
-task javadocJar(type: Jar) {
-    classifier = 'javadoc'
-    from javadoc
-}
-
-task sourcesJar(type: Jar) {
-    classifier = 'sources'
-    from sourceSets.main.allSource
-}
-
-artifacts {
-    archives javadocJar, sourcesJar
-}
-
-gradle.taskGraph.whenReady { graph ->
-    if (graph.hasTask(uploadArchives)) {
-
-        allprojects {
-            apply plugin: 'signing'
-            apply plugin: 'maven'
-            apply plugin: 'io.codearte.nexus-staging'
-
-            // Signature of artifacts
-            signing {
-                sign configurations.archives
+    uploadArchives {
+        repositories {
+            flatDir {
+                dirs 'build/repositories'
             }
+        }
+    }
 
-            // OSSRH publication
-            uploadArchives {
-                repositories {
-                    mavenDeployer {
-                        beforeDeployment {
-                            MavenDeployment deployment -> signing.signPom(deployment)
-                        }
-                        repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                            authentication(userName: ossrhUsername, password: ossrhPassword)
-                        }
-                        snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-                            authentication(userName: ossrhUsername, password: ossrhPassword)
-                        }
+    def generatedSources = "${buildDir}/generated-src"
 
-                        pom.project {
-                            name 'fix4j'
-                            packaging 'jar'
-                            // optionally artifactId can be defined here
-                            description 'Java low latency zero garbage FIX engine'
-                            url 'http://fix4j.org'
+    task generateSources() << {
+        println "Generating sources...."
+        ant.taskdef(name: 'fmpp', classname: 'fmpp.tools.AntTask', classpath: buildscript.configurations.classpath.asPath)
+        ant.fmpp(
+                configuration: "src/main/resources/codegen/config/config.fmpp",
+                sourceRoot: "src/main/resources/codegen/templates",
+                outputRoot: generatedSources
+        )
+    }
 
-                            scm {
-                                connection 'scm:git:git@github.com:tools4j/fix4j.git'
-                                developerConnection 'scm:git:git@github.com:tools4j/fix4j.git'
-                                url 'git@github.com:tools4j/fix4j.git'
+    sourceSets.main.java {
+        srcDirs generatedSources, 'src/main/java'
+    }
+
+    compileJava.dependsOn generateSources, licenseFormat
+
+    javadoc {
+        options.showFromPackage()
+        options.linkSource()
+        options.links("http://docs.oracle.com/javase/8/docs/api/");
+        options.windowTitle = "fix4j API ${version}"
+        options.overview = "src/main/java/overview.html";
+    }
+
+    task javadocJar(type: Jar) {
+        classifier = 'javadoc'
+        from javadoc
+    }
+
+    task sourcesJar(type: Jar) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
+
+    artifacts {
+        archives javadocJar, sourcesJar
+    }
+
+    gradle.taskGraph.whenReady { graph ->
+        if (graph.hasTask(uploadArchives)) {
+
+            allprojects {
+                apply plugin: 'signing'
+                apply plugin: 'maven'
+                apply plugin: 'io.codearte.nexus-staging'
+
+                // Signature of artifacts
+                signing {
+                    sign configurations.archives
+                }
+
+                // OSSRH publication
+                uploadArchives {
+                    repositories {
+                        mavenDeployer {
+                            beforeDeployment {
+                                MavenDeployment deployment -> signing.signPom(deployment)
                             }
-                            licenses {
-                                license {
-                                    name 'MIT License'
-                                    url 'http://opensource.org/licenses/MIT'
-                                }
+                            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                                authentication(userName: ossrhUsername, password: ossrhPassword)
+                            }
+                            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                                authentication(userName: ossrhUsername, password: ossrhPassword)
                             }
 
-                            developers {
-                                developer {
-                                    id 'terzerm'
-                                    name 'Marco Terzer'
+                            pom.project {
+                                name 'fix4j'
+                                packaging 'jar'
+                                // optionally artifactId can be defined here
+                                description 'Java low latency zero garbage FIX engine'
+                                url 'http://fix4j.org'
+
+                                scm {
+                                    connection 'scm:git:git@github.com:tools4j/fix4j.git'
+                                    developerConnection 'scm:git:git@github.com:tools4j/fix4j.git'
+                                    url 'git@github.com:tools4j/fix4j.git'
                                 }
-                                developer {
-                                    id 'harukizaemon'
-                                    name 'Simon Harris'
+                                licenses {
+                                    license {
+                                        name 'MIT License'
+                                        url 'http://opensource.org/licenses/MIT'
+                                    }
+                                }
+
+                                developers {
+                                    developer {
+                                        id 'terzerm'
+                                        name 'Marco Terzer'
+                                    }
+                                    developer {
+                                        id 'harukizaemon'
+                                        name 'Simon Harris'
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
 
-            nexusStaging {
-                username = ossrhUsername
-                password = ossrhPassword
+                nexusStaging {
+                    username = ossrhUsername
+                    password = ossrhPassword
+                }
             }
         }
     }
