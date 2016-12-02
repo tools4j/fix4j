@@ -1,0 +1,4 @@
+include 'fix4j-engine'
+include 'quickfix:server'
+findProject(':quickfix:server')?.name = 'fix4j-quickfix-server'
+

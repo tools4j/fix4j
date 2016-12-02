@@ -27,19 +27,47 @@ allprojects {
         ext.year = Calendar.getInstance().get(Calendar.YEAR)
     }
 }
-archivesBaseName = "fix4j-engine"
+
+subprojects {
+    repositories {
+        mavenCentral()
+        maven {
+            url "https://oss.sonatype.org/content/repositories/snapshots/"
+        }
+    }
+
+    sourceSets.main.java {
+        srcDirs 'src/main/java'
+    }
+
+    javadoc {
+        options.showFromPackage()
+        options.linkSource()
+        options.links("http://docs.oracle.com/javase/8/docs/api/");
+        options.windowTitle = "fix4j API ${version}"
+        options.overview = "src/main/java/overview.html";
+    }
+
+    task javadocJar(type: Jar) {
+        classifier = 'javadoc'
+        from javadoc
+    }
+
+    task sourcesJar(type: Jar) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
+
+    artifacts {
+        archives javadocJar, sourcesJar
+    }
+
+}
 
 project(':fix4j-engine') {
     jar {
         manifest {
             attributes 'Implementation-Title': 'fix4j', 'Implementation-Version': version
-        }
-    }
-
-    repositories {
-        mavenCentral()
-        maven {
-            url "https://oss.sonatype.org/content/repositories/snapshots/"
         }
     }
 
@@ -69,6 +97,10 @@ project(':fix4j-engine') {
 
     def generatedSources = "${buildDir}/generated-src"
 
+    sourceSets.main.java {
+        srcDirs generatedSources, 'src/main/java'
+    }
+
     task generateSources() << {
         println "Generating sources...."
         ant.taskdef(name: 'fmpp', classname: 'fmpp.tools.AntTask', classpath: rootProject.buildscript.configurations.classpath.asPath)
@@ -79,33 +111,8 @@ project(':fix4j-engine') {
         )
     }
 
-    sourceSets.main.java {
-        srcDirs generatedSources, 'src/main/java'
-    }
 
     compileJava.dependsOn generateSources, licenseFormat
-
-    javadoc {
-        options.showFromPackage()
-        options.linkSource()
-        options.links("http://docs.oracle.com/javase/8/docs/api/");
-        options.windowTitle = "fix4j API ${version}"
-        options.overview = "src/main/java/overview.html";
-    }
-
-    task javadocJar(type: Jar) {
-        classifier = 'javadoc'
-        from javadoc
-    }
-
-    task sourcesJar(type: Jar) {
-        classifier = 'sources'
-        from sourceSets.main.allSource
-    }
-
-    artifacts {
-        archives javadocJar, sourcesJar
-    }
 
     gradle.taskGraph.whenReady { graph ->
         if (graph.hasTask(uploadArchives)) {
