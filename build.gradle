@@ -8,6 +8,7 @@ buildscript {
         classpath 'io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.5.3'
         classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.11.0'
         classpath 'net.sourceforge.fmpp:fmpp:0.9.15'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.4'
     }
 
 }
@@ -39,6 +40,8 @@ subprojects {
     sourceSets.main.java {
         srcDirs 'src/main/java'
     }
+
+    compileJava.dependsOn licenseFormat
 
     javadoc {
         options.showFromPackage()
@@ -110,7 +113,6 @@ project(':fix4j-engine') {
                 outputRoot: generatedSources
         )
     }
-
 
     compileJava.dependsOn generateSources, licenseFormat
 
