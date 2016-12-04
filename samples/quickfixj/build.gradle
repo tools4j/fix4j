@@ -1,0 +1,22 @@
+subprojects {
+    dependencies {
+        compile 'org.quickfixj:quickfixj-all:1.6.2'
+        runtime 'org.slf4j:slf4j-simple:1.7.21'
+    }
+}
+
+project ('quickfixj-server') {
+    apply plugin: 'com.github.johnrengelman.shadow'
+
+    jar {
+        manifest {
+            attributes 'Main-Class': 'org.fix4j.quickfix.QuickfixServer'
+        }
+    }
+
+    task copySettings(type: Copy) {
+        from 'src/main/resources'
+        into 'build/libs'
+    }
+
+}

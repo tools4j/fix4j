@@ -1,4 +1,7 @@
 include 'fix4j-engine'
-include 'quickfix'
-include 'quickfix:server'
+include 'samples'
+include 'samples:quickfixj'
+include 'samples:quickfixj:quickfixj-server'
+include 'samples:fix4j-samples'
+include 'samples:fix4j-samples:fix4j-client'
 

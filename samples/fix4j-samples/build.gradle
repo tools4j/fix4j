@@ -1,16 +1,16 @@
 subprojects {
     dependencies {
-        compile 'org.quickfixj:quickfixj-all:1.6.2'
+        compile project(':fix4j-engine')
         runtime 'org.slf4j:slf4j-simple:1.7.21'
     }
 }
 
-project ('server') {
+project ('fix4j-client') {
     apply plugin: 'com.github.johnrengelman.shadow'
 
     jar {
         manifest {
-            attributes 'Main-Class': 'org.fix4j.quickfix.QuickfixServer'
+            attributes 'Main-Class': 'org.fix4j.client.Fix4jClient'
         }
     }
 
