@@ -32,6 +32,8 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
 /**
@@ -48,6 +50,7 @@ public class UnsafeMessageLog implements MessageLog {
     public UnsafeMessageLog(final String path, final long size, final ExceptionHandler exceptionHandler) {
         this.path = path;
         try {
+            Files.createDirectories(Paths.get(path).getParent());
             RandomAccessFile raf = new RandomAccessFile(path, "rw");
             mbb = raf.getChannel().map(FileChannel.MapMode.READ_WRITE, 0, size);
             buffer = UnsafeBuffer.wrap(mbb);

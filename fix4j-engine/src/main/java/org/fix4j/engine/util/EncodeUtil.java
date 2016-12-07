@@ -21,13 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.fix4j.engine;
+package org.fix4j.engine.util;
 
 /**
- * Created by ryan on 1/06/16.
+ * Created by ryan on 5/12/16.
  */
-public class SupremeWaddleException extends RuntimeException {
-    public SupremeWaddleException(Exception e) {
-        super(e);
-    }
+public class EncodeUtil {
 }

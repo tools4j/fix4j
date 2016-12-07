@@ -21,38 +21,60 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.fix4j.engine;
+package org.fix4j.engine.type;
 
-import java.time.Clock;
+import java.time.*;
 
-/**
- * Created by ryan on 3/06/16.
- */
-public class StringMessage implements Message {
+public class UTCTimestamp {
 
-    private final String content;
+    public static final int NANOS_IN_MILLI = 1_000_000;
+    private long epochMillis;
 
-    public StringMessage(final String content) {
-        this.content = content;
-    }
+    private LocalDateTime localDateTime;
 
-    @Override
-    public int length() {
-        return content.length();
-    }
-
-    @Override
-    public byte getByte(int idx) {
-        return (byte) content.charAt(idx);
-    }
-
-    @Override
-    public Buffer putByte(byte b) {
+    public UTCTimestamp epochMillis(final long epochMillis) {
+        this.epochMillis = epochMillis;
+        this.localDateTime = null;
         return this;
     }
 
-    @Override
-    public Message encode(int sequenceNumber, Clock clock) {
-        return this;
+    public long epochMillis() {
+        return epochMillis;
+    }
+
+    public int year() {
+        return localDateTime().getYear();
+    }
+
+    public int month() {
+        return localDateTime().getMonthValue();
+    }
+
+    public int day() {
+        return localDateTime().getDayOfMonth();
+    }
+
+    public int hour() {
+        return localDateTime().getHour();
+    }
+
+    public int minute() {
+        return localDateTime().getMinute();
+    }
+
+    public int second() {
+        return localDateTime().getSecond();
+    }
+
+    public int millis() {
+        return localDateTime().getNano() / NANOS_IN_MILLI;
+    }
+
+
+    private LocalDateTime localDateTime() {
+        if (localDateTime == null) {
+            localDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(epochMillis), ZoneOffset.UTC);
+        }
+        return localDateTime;
     }
 }

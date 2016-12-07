@@ -23,6 +23,7 @@
  */
 package org.fix4j.engine;
 
+import org.fix4j.engine.exception.Fix4jException;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -38,7 +39,7 @@ public interface ExceptionHandler {
 
     static ExceptionHandler throwing() {
         return e -> {
-            throw new SupremeWaddleException(e);
+            throw new Fix4jException(e);
         };
     }
 }

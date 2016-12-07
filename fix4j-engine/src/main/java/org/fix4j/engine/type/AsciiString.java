@@ -21,38 +21,77 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.fix4j.engine;
+package org.fix4j.engine.type;
 
-import java.time.Clock;
+import org.fix4j.engine.Buffer;
 
-/**
- * Created by ryan on 3/06/16.
- */
-public class StringMessage implements Message {
+import static org.fix4j.engine.util.MathUtil.nextPowerOfTwo;
 
-    private final String content;
+public class AsciiString implements CharSequence, Buffer {
 
-    public StringMessage(final String content) {
-        this.content = content;
+    private byte[] bytes;
+
+    private int pos;
+
+    public AsciiString(final int capacity) {
+        pos = 0;
+        bytes = new byte[nextPowerOfTwo(capacity)];
+    }
+
+    public AsciiString(final CharSequence charSequence) {
+        this(charSequence.length());
+        append(charSequence);
+    }
+
+    /**
+     * Appends the charSequence to the end of this
+     *
+     * @param charSequence  what to append
+     * @return              this
+     */
+    public AsciiString append(final CharSequence charSequence) {
+        for (int i = 0; i < charSequence.length(); i++) {
+            append((byte) charSequence.charAt(i));
+        }
+        return this;
     }
 
     @Override
     public int length() {
-        return content.length();
+        return pos;
     }
 
     @Override
     public byte getByte(int idx) {
-        return (byte) content.charAt(idx);
+        return bytes[idx];
     }
 
     @Override
     public Buffer putByte(byte b) {
-        return this;
+        return append(b);
     }
 
     @Override
-    public Message encode(int sequenceNumber, Clock clock) {
+    public char charAt(int index) {
+        return (char) getByte(index);
+    }
+
+    @Override
+    public CharSequence subSequence(int start, int end) {
+        throw new UnsupportedOperationException("not yet implemented");
+    }
+
+    public void reset() {
+        pos = 0;
+    }
+
+    public AsciiString append(byte b) {
+        bytes[pos] = b;
+        pos++;
         return this;
+    }
+
+    public AsciiString append(char c) {
+        return append((byte)c);
     }
 }

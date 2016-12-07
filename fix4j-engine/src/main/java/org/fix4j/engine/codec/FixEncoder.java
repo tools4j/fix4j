@@ -1,0 +1,128 @@
+/**
+ * The MIT License (MIT)
+ * <p>
+ * Copyright (c) 2016 fix4j.org (tools4j.org)
+ * <p>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * <p>
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * <p>
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+package org.fix4j.engine.codec;
+
+import org.fix4j.engine.type.AsciiString;
+import org.fix4j.engine.type.UTCTimestamp;
+
+public class FixEncoder implements TagEncoder, ValueEncoder {
+
+    private final StringBuilder sb = new StringBuilder(32);
+
+    private AsciiString content;
+
+    public TagEncoder wrap(final AsciiString content) {
+        this.content = content;
+        return this;
+    }
+
+    /**
+     * Writes to the underlying content:
+     * [tag]=
+     *
+     * @param tag the tag number to write
+     * @return this
+     */
+    public ValueEncoder tag(final int tag) {
+        content.append(toChars(tag)).append('=');
+        return this;
+    }
+
+    /**
+     * Write to the underlying content:
+     * [cs]\u0001
+     *
+     * @param cs the cs to write
+     * @return this
+     */
+    public TagEncoder value(final CharSequence cs) {
+        content.append(cs).append('\u0001');
+        return this;
+    }
+
+    @Override
+    public TagEncoder value(long l) {
+        return value(toChars(l));
+    }
+
+    @Override
+    public TagEncoder value(boolean b) {
+        return value(b ? 'Y' : 'N');
+    }
+
+    @Override
+    public TagEncoder value(char c) {
+        content.append(c).append('\u0001');
+        return this;
+    }
+
+    @Override
+    public TagEncoder value(final UTCTimestamp utcTimestamp) {
+        content
+                .append(toChars(utcTimestamp.year(), 4))
+                .append(toChars(utcTimestamp.month(), 2))
+                .append(toChars(utcTimestamp.day(), 2))
+                .append('-')
+                .append(toChars(utcTimestamp.hour(), 2))
+                .append(':')
+                .append(toChars(utcTimestamp.minute(), 2))
+                .append(':')
+                .append(toChars(utcTimestamp.second(), 2))
+                .append('.')
+                .append(toChars(utcTimestamp.millis(), 3))
+                .append('\u0001');
+        return this;
+    }
+
+    private CharSequence toChars(final long l) {
+        return toChars(l, 0);
+    }
+
+    private CharSequence toChars(final long l, final int padTo) {
+        sb.setLength(0);
+        final int numDigits = numDigits(l);
+        for (int i = numDigits; i < padTo; i++) {
+            sb.append('0');
+        }
+        sb.append(l);
+        return sb;
+    }
+
+    // todo make this work better
+    private int numDigits(final long l) {
+        if (l < 10) {
+            return 1;
+        }
+        if (l < 100) {
+            return 2;
+        }
+        if (l < 1000) {
+            return 3;
+        }
+        if (l < 10000) {
+            return 4;
+        }
+        throw new IllegalArgumentException("numDigits for [" + l + "] not supported yet.");
+    }
+}

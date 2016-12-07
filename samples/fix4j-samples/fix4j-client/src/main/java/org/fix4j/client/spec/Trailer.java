@@ -21,16 +21,48 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.fix4j.engine.exception;
+package org.fix4j.client.spec;
 
-public class Fix4jException extends RuntimeException {
-	private static final long serialVersionUID = 1L;
+import org.fix4j.engine.Buffer;
+import org.fix4j.engine.codec.FixEncoder;
+import org.fix4j.engine.type.AsciiString;
 
-	public Fix4jException(String message) {
-		super(message);
-	}
+public class Trailer implements Buffer {
 
-	public Fix4jException(Exception e) {
-		super(e);
-	}
+    private final AsciiString content = new AsciiString(32);
+
+    private final FixEncoder fixEncoder = new FixEncoder();
+
+    public Trailer checksum(final CharSequence checksum) {
+        fixEncoder.wrap(content)
+                .tag(10).value(checksum);
+        return this;
+    }
+
+    @Override
+    public int length() {
+        return content.length();
+    }
+
+    public byte getByte(int idx) {
+        return (byte) content.charAt(idx);
+    }
+
+    @Override
+    public Buffer putByte(byte b) {
+        content.append((char)b);
+        return this;
+    }
+
+    public void reset() {
+        content.reset();
+    }
+
+    public Trailer encode() {
+        return this;
+    }
+
+    public CharSequence content() {
+        return content;
+    }
 }

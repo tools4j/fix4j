@@ -21,16 +21,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.fix4j.engine.exception;
+package org.fix4j.engine.session;
 
-public class Fix4jException extends RuntimeException {
-	private static final long serialVersionUID = 1L;
+public class FixSessionConfiguration {
 
-	public Fix4jException(String message) {
-		super(message);
-	}
+    private CharSequence senderCompId;
 
-	public Fix4jException(Exception e) {
-		super(e);
-	}
+    private CharSequence targetCompId;
+
+    public FixSessionConfiguration senderCompId(final CharSequence senderCompId) {
+        this.senderCompId = senderCompId;
+        return this;
+    }
+
+    public FixSessionConfiguration targetCompId(final CharSequence targetCompId) {
+        this.targetCompId = targetCompId;
+        return this;
+    }
+
+    public CharSequence senderCompId() {
+        return senderCompId;
+    }
+
+    public CharSequence targetCompId() {
+        return targetCompId;
+    }
+
 }

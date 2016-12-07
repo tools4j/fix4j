@@ -46,7 +46,7 @@ public class UnsafeBufferTest {
             final StringBuilder sb = new StringBuilder();
 
             @Override
-            public long remaining() {
+            public int length() {
                 return 0;
             }
 

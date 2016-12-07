@@ -24,7 +24,7 @@
 package org.fix4j.engine.net;
 
 import org.fix4j.engine.ExceptionHandler;
-import org.fix4j.engine.SupremeWaddleException;
+import org.fix4j.engine.exception.Fix4jException;
 
 import java.io.IOException;
 
@@ -41,17 +41,17 @@ public interface TcpExceptionHandler extends ExceptionHandler {
         return new TcpExceptionHandler() {
             @Override
             public void onError(Exception e) {
-                throw new SupremeWaddleException(e);
+                throw new Fix4jException(e);
             }
 
             @Override
             public void onError(IOException ioe) {
-                throw new SupremeWaddleException(ioe);
+                throw new Fix4jException(ioe);
             }
 
             @Override
             public void onError(TcpConnection tcpConnection, IOException ioe) {
-                throw new SupremeWaddleException(ioe);
+                throw new Fix4jException(ioe);
             }
         };
     }

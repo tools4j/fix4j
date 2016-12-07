@@ -21,16 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.fix4j.engine.exception;
+package org.fix4j.engine.codec;
 
-public class Fix4jException extends RuntimeException {
-	private static final long serialVersionUID = 1L;
+import org.fix4j.engine.type.UTCTimestamp;
 
-	public Fix4jException(String message) {
-		super(message);
-	}
+public interface ValueEncoder {
 
-	public Fix4jException(Exception e) {
-		super(e);
-	}
+    TagEncoder value(CharSequence cs);
+
+    TagEncoder value(long l);
+
+    TagEncoder value(boolean b);
+
+    TagEncoder value(char c);
+
+    TagEncoder value(UTCTimestamp utcTimestamp);
 }

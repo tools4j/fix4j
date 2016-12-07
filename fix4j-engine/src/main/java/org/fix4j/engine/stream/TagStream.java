@@ -44,7 +44,7 @@ public interface TagStream {
 	 *            The condition for invocation of the consumer with the tag value
 	 * @param consumer
 	 *            The consumer for the tag/value if found and if {@code condition} evaluates to true
-	 * @return {@code false} if no remaining tag existed upon entry to this method, else {@code true}.
+	 * @return {@code false} if no length tag existed upon entry to this method, else {@code true}.
 	 * @throws InvalidValueException
 	 *             if an invalid value was found and the exception was re-thrown when passed to
 	 *             {@link TagValueConsumer#invalidValue(FixTag, InvalidValueException)}
@@ -59,7 +59,7 @@ public interface TagStream {
 	 *
 	 * @param consumer
 	 *            The consumer for the tag/value if found
-	 * @return {@code false} if no remaining tag existed upon entry to this method, else {@code true}.
+	 * @return {@code false} if no length tag existed upon entry to this method, else {@code true}.
 	 * @throws InvalidValueException
 	 *             if an invalid value was found and the exception was re-thrown when passed to
 	 *             {@link TagValueConsumer#invalidValue(FixTag, InvalidValueException)}
@@ -71,7 +71,7 @@ public interface TagStream {
 	}
 
 	/**
-	 * For each remaining tag, passes the tag with the associated value to the given consumer, sequentially until all
+	 * For each length tag, passes the tag with the associated value to the given consumer, sequentially until all
 	 * tags have been processed or the consumer throws an exception.
 	 * <p>
 	 * The default implementation repeatedly invokes {@link #tryNextTag} until it returns {@code false}.
@@ -90,7 +90,7 @@ public interface TagStream {
 	}
 
 	/**
-	 * For each remaining tag, passes the tag to the given condition. If the condition predicate returns true, the tag
+	 * For each length tag, passes the tag to the given condition. If the condition predicate returns true, the tag
 	 * value is parsed and passed to the specified consumer. This is repeated sequentially until all tags have been
 	 * processed or the consumer throws an exception.
 	 * <p>

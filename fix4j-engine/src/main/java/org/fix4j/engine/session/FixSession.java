@@ -28,6 +28,9 @@ import org.fix4j.engine.Message;
 import org.fix4j.engine.log.MessageLog;
 import org.fix4j.engine.net.SocketConnection;
 
+import java.time.Clock;
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * Created by ryan on 2/06/16.
  */
@@ -43,6 +46,8 @@ public class FixSession {
 
     private final MessageLog outbound;
 
+    private final AtomicInteger sequenceNumber = new AtomicInteger(0);
+
     public FixSession(final SocketConnection socketConnection,
                       final SessionLifecycle sessionLifecycle,
                       final Application application,
@@ -56,7 +61,7 @@ public class FixSession {
     }
 
     public FixSession send(Message message) {
-        outbound.readFrom(message);
+        outbound.readFrom(message.encode(sequenceNumber.incrementAndGet(), Clock.systemUTC()));
         return this;
     }
 

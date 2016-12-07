@@ -23,8 +23,9 @@
  */
 package org.fix4j.engine;
 
-/**
- * Created by ryan on 3/06/16.
- */
+import java.time.Clock;
+
 public interface Message extends Buffer {
+
+    Message encode(int sequenceNumber, Clock clock);
 }

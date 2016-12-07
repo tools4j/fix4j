@@ -23,12 +23,16 @@
  */
 package org.fix4j.quickfix;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import quickfix.*;
 
 /**
  * Created by ryan on 2/12/16.
  */
 public class QuickfixServer {
+
+    private static final Logger logger = LoggerFactory.getLogger(QuickfixServer.class);
 
     public static void main (String[] args) throws ConfigError {
         new QuickfixServer().run();
@@ -59,37 +63,37 @@ public class QuickfixServer {
 
         @Override
         public void onCreate(SessionID sessionId) {
-
+            logger.info("onCreate for [{}]", sessionId);
         }
 
         @Override
         public void onLogon(SessionID sessionId) {
-
+            logger.info("onLogon for [{}]", sessionId);
         }
 
         @Override
         public void onLogout(SessionID sessionId) {
-
+            logger.info("onLogout for [{}]", sessionId);
         }
 
         @Override
         public void toAdmin(Message message, SessionID sessionId) {
-
+            logger.info("toAdmin with [{}] for [{}]", message, sessionId);
         }
 
         @Override
         public void fromAdmin(Message message, SessionID sessionId) throws FieldNotFound, IncorrectDataFormat, IncorrectTagValue, RejectLogon {
-
+            logger.info("fromAdmin with [{}] for [{}]", message, sessionId);
         }
 
         @Override
         public void toApp(Message message, SessionID sessionId) throws DoNotSend {
-
+            logger.info("toApp with [{}] for [{}]", message, sessionId);
         }
 
         @Override
         public void fromApp(Message message, SessionID sessionId) throws FieldNotFound, IncorrectDataFormat, IncorrectTagValue, UnsupportedMessageType {
-
+            logger.info("fromApp with [{}] for [{}]", message, sessionId);
         }
     }
 }

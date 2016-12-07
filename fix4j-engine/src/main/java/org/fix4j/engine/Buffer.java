@@ -27,7 +27,7 @@ package org.fix4j.engine;
  * Created by ryan on 3/06/16.
  */
 public interface Buffer {
-    long remaining();
+    int length();
 
     byte getByte(int idx);
 

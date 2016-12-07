@@ -23,20 +23,22 @@
  */
 package org.fix4j.client;
 
-import org.fix4j.engine.Application;
-import org.fix4j.engine.ExceptionHandler;
-import org.fix4j.engine.FixEngine;
-import org.fix4j.engine.StringMessage;
+import org.fix4j.client.spec.LogonMessage;
+import org.fix4j.engine.*;
 import org.fix4j.engine.log.LogEntry;
 import org.fix4j.engine.log.MessageLog;
 import org.fix4j.engine.log.UnsafeMessageLog;
 import org.fix4j.engine.net.TcpConnectionHandler;
 import org.fix4j.engine.net.TcpConnectionInitiator;
 import org.fix4j.engine.net.TcpExceptionHandler;
+import org.fix4j.engine.session.FixSessionConfiguration;
 import org.fix4j.engine.session.FixSessionInitiator;
 import org.fix4j.engine.spec.Fix4SessionLifecycle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.time.Clock;
 import java.util.function.Consumer;
 
 /**
@@ -49,14 +51,17 @@ public class Fix4jClient {
     }
 
     private void run() throws IOException {
+        final FixSessionConfiguration fixSessionConfiguration = new FixSessionConfiguration()
+                .senderCompId("FIX4J-INITIATOR")
+                .targetCompId("QUICKFIXJ-ACCEPTOR");
         final TcpConnectionHandler tcpConnectionHandler = new TcpConnectionHandler(TcpExceptionHandler.throwing());
         final FixEngine fixEngine = new FixEngine(tcpConnectionHandler, ExceptionHandler.logging());
         fixEngine.start();
 
         final int TWO_MB = 2 * 1024 * 1024;
         final TcpConnectionInitiator tcpConnectionInitiator = new TcpConnectionInitiator("localhost", 12000, TcpExceptionHandler.throwing(), tcpConnectionHandler);
-        final MessageLog initiatorInbound = new UnsafeMessageLog("./logs/inbound.log", TWO_MB, ExceptionHandler.throwing());
-        final MessageLog initiatorOutbound = new UnsafeMessageLog("./logs/outbound.log", TWO_MB, ExceptionHandler.throwing());
+        final MessageLog initiatorInbound = new UnsafeMessageLog("./logs/inbound-" + Clock.systemUTC().millis() + ".log", TWO_MB, ExceptionHandler.throwing());
+        final MessageLog initiatorOutbound = new UnsafeMessageLog("./logs/outbound-" + Clock.systemUTC().millis() + ".log", TWO_MB, ExceptionHandler.throwing());
         final FixSessionInitiator initiator = new FixSessionInitiator(
                 tcpConnectionInitiator,
                 initiatorInbound,
@@ -64,7 +69,11 @@ public class Fix4jClient {
                 () -> new Fix4SessionLifecycle.Initiator(sessionMessageType -> {
                     switch (sessionMessageType) {
                         case LOGON:
-                            return new StringMessage("logon");
+                            final LogonMessage logonMessage = new LogonMessage();
+                            logonMessage.header()
+                                    .senderCompId(fixSessionConfiguration.senderCompId())
+                                    .targetCompId(fixSessionConfiguration.targetCompId());
+                            return logonMessage;
                     }
                     return null;
                 }), Fix4jClientApplication::new
@@ -82,9 +91,15 @@ public class Fix4jClient {
 
     private static final class Fix4jClientApplication implements Application {
 
+        private static final Logger log = LoggerFactory.getLogger(Fix4jClientApplication.class);
+
+        private final Consumer<LogEntry> consumer = logEntry -> {
+            log.info("consume {}", logEntry);
+        };
+
         @Override
         public Consumer<LogEntry> consume() {
-            return null;
+            return consumer;
         }
     }
 

@@ -162,7 +162,7 @@ public class UnsafeBuffer implements OffHeapBuffer {
 
     @Override
     public OffHeapBuffer readFrom(Buffer buffer, Header header) {
-        long bytesToRead = buffer.remaining();
+        long bytesToRead = buffer.length();
         if (bytesToRead > 0) {
             long headerBytes = header.mark(this);
             long address = writeAddress() + headerBytes;

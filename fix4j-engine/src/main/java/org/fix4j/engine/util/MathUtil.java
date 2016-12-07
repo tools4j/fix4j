@@ -21,16 +21,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.fix4j.engine.exception;
+package org.fix4j.engine.util;
 
-public class Fix4jException extends RuntimeException {
-	private static final long serialVersionUID = 1L;
+/**
+ * Created by ryan on 5/12/16.
+ */
+public class MathUtil {
 
-	public Fix4jException(String message) {
-		super(message);
-	}
-
-	public Fix4jException(Exception e) {
-		super(e);
-	}
+    public static int nextPowerOfTwo(int x) {
+        if (x == 0) return 1;
+        x--;
+        x |= x >> 1;
+        x |= x >> 2;
+        x |= x >> 4;
+        x |= x >> 8;
+        return (x | x >> 16) + 1;
+    }
 }
