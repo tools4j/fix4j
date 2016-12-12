@@ -24,9 +24,9 @@
 package org.fix4j.engine.session;
 
 import org.fix4j.engine.Application;
-import org.fix4j.engine.log.MessageLog;
 import org.fix4j.engine.net.SocketConnection;
 import org.fix4j.engine.net.TcpConnectionAcceptor;
+import org.tools4j.mmap.queue.MappedQueue;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -38,17 +38,17 @@ public class FixSessionAcceptor implements FixSessionConnection {
 
     private final TcpConnectionAcceptor tcpConnection;
 
-    private final MessageLog inbound;
+    private final MappedQueue inbound;
 
-    private final MessageLog outbound;
+    private final MappedQueue outbound;
 
     private final Supplier<SessionLifecycle> sessionLifecycleSupplier;
 
     private final Supplier<Application> applicationSupplier;
 
     public FixSessionAcceptor(final TcpConnectionAcceptor tcpConnection,
-                              final MessageLog inbound,
-                              final MessageLog outbound,
+                              final MappedQueue inbound,
+                              final MappedQueue outbound,
                               final Supplier<SessionLifecycle> sessionLifecycleSupplier,
                               final Supplier<Application> applicationSupplier) {
         this.tcpConnection = tcpConnection;
@@ -71,6 +71,7 @@ public class FixSessionAcceptor implements FixSessionConnection {
         onFixSession.accept(new FixSession(
                 socketConnection,
                 sessionLifecycleSupplier.get(),
+                message -> null,
                 applicationSupplier.get(),
                 inbound,
                 outbound));

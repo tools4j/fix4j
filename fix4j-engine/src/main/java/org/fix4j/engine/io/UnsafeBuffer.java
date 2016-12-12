@@ -21,8 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.fix4j.engine;
+package org.fix4j.engine.io;
 
+import org.fix4j.engine.ExceptionHandler;
+import org.tools4j.mmap.io.MessageReader;
+import org.tools4j.mmap.io.MessageWriter;
 import sun.misc.Unsafe;
 import sun.nio.ch.DirectBuffer;
 
@@ -45,14 +48,17 @@ public class UnsafeBuffer implements OffHeapBuffer {
             field.setAccessible(true);
             return (Unsafe) field.get(null);
         } catch (IllegalAccessException | NoSuchFieldException e) {
-            //
+            throw new Error("Unsafe.theUnsafe not found.", e);
         }
-        return null;
     }
 
     private static final Unsafe UNSAFE = unsafe();
 
     private final ExceptionHandler exceptionHandler;
+
+    private final WriteAsAppendable waa = new WriteAsAppendable();
+
+    private final ReadAsCharSequence racs = new ReadAsCharSequence();
 
     private ByteBuffer buffer;
 
@@ -75,10 +81,6 @@ public class UnsafeBuffer implements OffHeapBuffer {
         this.capacity = buffer.capacity();
     }
 
-
-    public static UnsafeBuffer wrap(ByteBuffer byteBuffer) {
-        return new UnsafeBuffer(byteBuffer, ExceptionHandler.throwing());
-    }
 
     @Override
     public OffHeapBuffer readFrom(ReadableByteChannel readableByteChannel) {
@@ -112,80 +114,70 @@ public class UnsafeBuffer implements OffHeapBuffer {
     }
 
     @Override
-    public int bytesToWrite() {
-        return capacity - writePosition;
+    public OffHeapBuffer readFrom(final MessageReader messageReader) {
+        messageReader.getStringAscii(waa);
+        return this;
     }
 
-    public long writeAddress() {
+    private long readAddress() {
+        return address + readPosition;
+    }
+
+    private long writeAddress() {
         return address + writePosition;
     }
 
     @Override
-    public OffHeapBuffer readSkip(int bytes) {
-        readPosition += bytes;
-        return this;
-    }
-
-    public boolean cas(final long compare, final long set) {
-        return UNSAFE.compareAndSwapLong(null, writeAddress(), compare, set);
-    }
-
-    @Override
-    public long readAddress() {
-        return address + readPosition;
-    }
-
-    @Override
-    public OffHeapBuffer readFrom(final OffHeapBuffer buffer, final Header header) {
-        int bytesToRead = buffer.bytesToRead();
-        if (bytesToRead > 0) {
-            long headerBytes = header.mark(this);
-            long address = writeAddress() + headerBytes;
-            UNSAFE.copyMemory(buffer.readAddress(), address, bytesToRead);
-            writePosition += headerBytes + bytesToRead;
-            buffer.readSkip(bytesToRead);
-        }
-        return this;
-    }
-
-    @Override
-    public OffHeapBuffer readFrom(byte[] bytes, Header header) {
-        int bytesToRead = bytes.length;
-        if (bytesToRead > 0) {
-            long headerBytes = header.mark(this);
-            long address = writeAddress() + headerBytes;
-            UNSAFE.copyMemory(bytes, Unsafe.ARRAY_BYTE_BASE_OFFSET, null, address, bytesToRead);
-            writePosition += headerBytes + bytesToRead;
-        }
-        return this;
-    }
-
-    @Override
-    public OffHeapBuffer readFrom(Buffer buffer, Header header) {
-        long bytesToRead = buffer.length();
-        if (bytesToRead > 0) {
-            long headerBytes = header.mark(this);
-            long address = writeAddress() + headerBytes;
-            int i;
-            for (i = 0; i < bytesToRead; i++) {
-                UNSAFE.putByte(address + i, buffer.getByte(i));
-            }
-            writePosition += headerBytes + i;
-        }
-        return this;
-    }
-
-    @Override
-    public OffHeapBuffer writeTo(Buffer buffer) {
-        // todo handle a header - do we want to write it?
-        long address = readAddress();
+    public OffHeapBuffer writeTo(final MessageWriter messageWriter) {
         long bytesToWrite = bytesToRead();
-        int i;
-        for (i = 0; i < bytesToWrite; i++) {
-            buffer.putByte(UNSAFE.getByte(address + i));
+        messageWriter.putStringAscii(racs).finishWriteMessage();
+        readPosition += bytesToWrite;
+        return this;
+    }
+
+    private final class WriteAsAppendable implements Appendable {
+
+        @Override
+        public Appendable append(final CharSequence csq) throws IOException {
+            return append(csq, 0, csq.length());
         }
-        writePosition += i;
-        return null;
+
+        @Override
+        public Appendable append(final CharSequence csq, int start, int end) throws IOException {
+            long address = writeAddress();
+            for (int i = start; i < end; i++) {
+                UNSAFE.putByte(address + i, (byte) csq.charAt(i));
+            }
+            int bytes = end - start;
+            writePosition += bytes;
+            return this;
+        }
+
+        @Override
+        public Appendable append(char c) throws IOException {
+            long address = writeAddress();
+            UNSAFE.putByte(address, (byte) c);
+            writePosition += 1;
+            return this;
+        }
+    }
+
+    private final class ReadAsCharSequence implements CharSequence {
+
+        @Override
+        public int length() {
+            return bytesToRead();
+        }
+
+        @Override
+        public char charAt(int index) {
+            return (char) UNSAFE.getByte(readAddress() + index);
+        }
+
+        @Override
+        public CharSequence subSequence(int start, int end) {
+            throw new UnsupportedOperationException("#dontlike");
+        }
     }
 
 }

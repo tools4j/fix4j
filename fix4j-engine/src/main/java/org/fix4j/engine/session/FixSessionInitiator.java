@@ -24,9 +24,10 @@
 package org.fix4j.engine.session;
 
 import org.fix4j.engine.Application;
-import org.fix4j.engine.log.MessageLog;
+import org.fix4j.engine.MessageFactory;
 import org.fix4j.engine.net.SocketConnection;
 import org.fix4j.engine.net.TcpConnectionInitiator;
+import org.tools4j.mmap.queue.MappedQueue;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -38,23 +39,27 @@ public class FixSessionInitiator implements FixSessionConnection {
 
     private final TcpConnectionInitiator tcpConnection;
 
-    private final MessageLog inbound;
+    private final MappedQueue inbound;
 
-    private final MessageLog outbound;
+    private final MappedQueue outbound;
+
+    private final Supplier<MessageFactory> messageFactorySupplier;
 
     private final Supplier<SessionLifecycle> sessionLifecycleSupplier;
 
     private final Supplier<Application> applicationSupplier;
 
     public FixSessionInitiator(final TcpConnectionInitiator tcpConnection,
-                               final MessageLog inbound,
-                               final MessageLog outbound,
+                               final MappedQueue inbound,
+                               final MappedQueue outbound,
                                final Supplier<SessionLifecycle> sessionLifecycleSupplier,
+                               final Supplier<MessageFactory> messageFactorySupplier,
                                final Supplier<Application> applicationSupplier) {
         this.tcpConnection = tcpConnection;
         this.inbound = inbound;
         this.outbound = outbound;
         this.sessionLifecycleSupplier = sessionLifecycleSupplier;
+        this.messageFactorySupplier = messageFactorySupplier;
         this.applicationSupplier = applicationSupplier;
     }
 
@@ -71,6 +76,7 @@ public class FixSessionInitiator implements FixSessionConnection {
         onFixSession.accept(new FixSession(
                 socketConnection,
                 sessionLifecycleSupplier.get(),
+                messageFactorySupplier.get(),
                 applicationSupplier.get(),
                 inbound,
                 outbound));

@@ -25,9 +25,16 @@ package org.fix4j.engine.session;
 
 import org.fix4j.engine.Application;
 import org.fix4j.engine.Message;
-import org.fix4j.engine.log.MessageLog;
+import org.fix4j.engine.MessageFactory;
 import org.fix4j.engine.net.SocketConnection;
+import org.fix4j.engine.type.AsciiString;
+import org.tools4j.mmap.io.MessageReader;
+import org.tools4j.mmap.io.MessageWriter;
+import org.tools4j.mmap.queue.Appender;
+import org.tools4j.mmap.queue.Enumerator;
+import org.tools4j.mmap.queue.MappedQueue;
 
+import java.io.IOException;
 import java.time.Clock;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -40,48 +47,108 @@ public class FixSession {
 
     private final SessionLifecycle sessionLifecycle;
 
+    private final MessageFactory messageFactory;
+
     private final Application application;
 
-    private final MessageLog inbound;
+    private final MappedQueue inbound;
 
-    private final MessageLog outbound;
+    private final Appender inboundAppender;
+
+    private final Enumerator inboundEnumerator;
+
+    private final MappedQueue outbound;
+
+    private final Enumerator outboundEnumerator;
+
+    private final Appender outboundAppender;
 
     private final AtomicInteger sequenceNumber = new AtomicInteger(0);
 
+    private final ReadAsAsciiString readAsAsciiString = new ReadAsAsciiString();
+
     public FixSession(final SocketConnection socketConnection,
                       final SessionLifecycle sessionLifecycle,
+                      final MessageFactory messageFactory,
                       final Application application,
-                      final MessageLog inbound,
-                      final MessageLog outbound) {
+                      final MappedQueue inbound,
+                      final MappedQueue outbound) {
         this.socketConnection = socketConnection;
         this.sessionLifecycle = sessionLifecycle;
+        this.messageFactory = messageFactory;
         this.application = application;
         this.inbound = inbound;
+        this.inboundAppender = inbound.appender();
+        inboundEnumerator = inbound.enumerator();
         this.outbound = outbound;
+        this.outboundAppender = outbound.appender();
+        this.outboundEnumerator = outbound.enumerator();
     }
 
     public FixSession send(Message message) {
-        outbound.readFrom(message.encode(sequenceNumber.incrementAndGet(), Clock.systemUTC()));
+        final int nextSequenceNumber = this.sequenceNumber.incrementAndGet();
+        final Clock systemUTC = Clock.systemUTC();
+        final MessageWriter messageWriter = outboundAppender.appendMessage();
+        // write the sequence number and provide space for the message length as well
+        message.encode(nextSequenceNumber, systemUTC, messageWriter);
+        messageWriter.finishWriteMessage();
         return this;
     }
 
     public FixSession fromWire() {
-        socketConnection.readInto(inbound);
+        socketConnection.readInto(inboundAppender);
         return this;
     }
 
     public FixSession toWire() {
-        socketConnection.writeFrom(outbound);
+        socketConnection.writeFrom(outboundEnumerator);
         return this;
     }
 
     public FixSession process() {
         // read messages from inbound
-        inbound.logEntries().forEach(sessionLifecycle.consume().andThen(application.consume()));
+        while (inboundEnumerator.hasNextMessage()) {
+            final MessageReader messageReader = inboundEnumerator.readNextMessage();
+            messageReader.getStringAscii(readAsAsciiString.reset());
+            final Message message = messageFactory.create(readAsAsciiString.asciiString);
+
+//            sessionLifecycle.onMessage(messageReader);
+//            application.onMessage(messageReader);
+            messageReader.finishReadMessage();
+        }
 
         // add heartbeat or test request if required.
         sessionLifecycle.manage(this);
         return this;
+    }
+
+    private final class ReadAsAsciiString implements Appendable {
+
+        private final AsciiString.Mutable asciiString = new AsciiString.Mutable(2048);
+
+        @Override
+        public Appendable append(final CharSequence csq) throws IOException {
+            return append(csq, 0, csq.length());
+        }
+
+        @Override
+        public Appendable append(final CharSequence csq, final int start, final int end) throws IOException {
+            for (int i = start; i < end; i++) {
+                asciiString.append(csq.charAt(i));
+            }
+            return this;
+        }
+
+        @Override
+        public Appendable append(char c) throws IOException {
+            asciiString.append(c);
+            return this;
+        }
+
+        public Appendable reset() {
+            asciiString.reset();
+            return this;
+        }
     }
 
 }

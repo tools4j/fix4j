@@ -30,9 +30,9 @@ public class FixEncoder implements TagEncoder, ValueEncoder {
 
     private final StringBuilder sb = new StringBuilder(32);
 
-    private AsciiString content;
+    private AsciiString.Mutable content;
 
-    public TagEncoder wrap(final AsciiString content) {
+    public TagEncoder wrap(final AsciiString.Mutable content) {
         this.content = content;
         return this;
     }

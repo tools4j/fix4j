@@ -23,10 +23,10 @@
  */
 package org.fix4j.client.spec;
 
-import org.fix4j.engine.Buffer;
 import org.fix4j.engine.Message;
 import org.fix4j.engine.codec.FixEncoder;
 import org.fix4j.engine.type.AsciiString;
+import org.tools4j.mmap.io.MessageWriter;
 
 import java.time.Clock;
 
@@ -39,9 +39,9 @@ public final class LogonMessage implements Message {
         }
     };
 
-    private final Header header = new Header();
-    private final AsciiString content = new AsciiString(128);
     private final FixEncoder fixEncoder = new FixEncoder();
+    private final Header header = new Header();
+    private final AsciiString.Mutable content = new AsciiString.Mutable(128);
     private final Trailer trailer = new Trailer();
 
     private int encryptMethod;
@@ -85,25 +85,19 @@ public final class LogonMessage implements Message {
     }
 
     @Override
-    public byte getByte(int idx) {
+    public byte byteAt(int idx) {
         if (idx < header.length()) {
-            return header.getByte(idx);
+            return header.byteAt(idx);
         } else if (idx < header.length() + content.length()) {
             return (byte) content.charAt(idx - header.length());
         } else if (idx < length()) {
-            return trailer.getByte(idx - header.length() - content.length());
+            return trailer.byteAt(idx - header.length() - content.length());
         }
         throw new IndexOutOfBoundsException("index[" + idx + "], length [" + length() + "]");
     }
 
     @Override
-    public Buffer putByte(byte b) {
-        content.putByte(b);
-        return this;
-    }
-
-    @Override
-    public Message encode(final int sequenceNumber, final Clock clock) {
+    public Message encode(final int sequenceNumber, final Clock clock, final MessageWriter messageWriter) {
         fixEncoder.wrap(content)
                 .tag(98).value(encryptMethod)
                 .tag(108).value(heartBtInt)
@@ -122,27 +116,29 @@ public final class LogonMessage implements Message {
 
         trailer
                 .checksum(generateChecksum(header, content, trailer));
+
+        messageWriter.putStringAscii(this);
         return this;
     }
 
     private static CharSequence generateChecksum(
-            final Buffer header,
-            final Buffer message,
-            final Buffer trailer
+            final AsciiString header,
+            final AsciiString message,
+            final AsciiString trailer
     ) {
         final StringBuilder sb = checksumTL.get();
         sb.setLength(0);
         long checksum = 0;
         for (int i = 0; i < header.length(); i++) {
-            checksum += header.getByte(i);
+            checksum += header.byteAt(i);
         }
 
         for (int i = 0; i < message.length(); i++) {
-            checksum += message.getByte(i);
+            checksum += message.byteAt(i);
         }
 
         for (int i = 0; i < trailer.length(); i++) {
-            checksum += trailer.getByte(i);
+            checksum += trailer.byteAt(i);
         }
 
         checksum %= 256;

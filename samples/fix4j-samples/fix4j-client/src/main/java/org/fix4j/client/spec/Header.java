@@ -23,26 +23,25 @@
  */
 package org.fix4j.client.spec;
 
-import org.fix4j.engine.Buffer;
 import org.fix4j.engine.codec.FixEncoder;
 import org.fix4j.engine.type.AsciiString;
 import org.fix4j.engine.type.UTCTimestamp;
 
-public class Header implements Buffer {
+public class Header implements AsciiString {
 
-    private final AsciiString firstTwoFields = new AsciiString(16);
+    private final AsciiString.Mutable firstTwoFields = new AsciiString.Mutable(16);
 
-    private final AsciiString content = new AsciiString(128);
+    private final AsciiString.Mutable content = new AsciiString.Mutable(128);
 
     private final FixEncoder fixEncoder = new FixEncoder();
 
-    private final AsciiString beginString = new AsciiString("FIX.4.2");
+    private final AsciiString.Mutable beginString = new AsciiString.Mutable("FIX.4.2");
 
-    private AsciiString msgType = new AsciiString(8);
+    private AsciiString.Mutable msgType = new AsciiString.Mutable(8);
 
-    private AsciiString senderCompId = new AsciiString(32);
+    private AsciiString.Mutable senderCompId = new AsciiString.Mutable(32);
 
-    private AsciiString targetCompId = new AsciiString(32);
+    private AsciiString.Mutable targetCompId = new AsciiString.Mutable(32);
 
     private int msgSeqNum;
 
@@ -90,19 +89,13 @@ public class Header implements Buffer {
     }
 
     @Override
-    public byte getByte(int idx) {
+    public byte byteAt(int idx) {
         if (idx < firstTwoFields.length()) {
             return (byte) firstTwoFields.charAt(idx);
         } else if (idx < length()) {
             return (byte) content.charAt(idx - firstTwoFields.length());
         }
         throw new IndexOutOfBoundsException("index[" + idx + "], length [" + length() + "]");
-    }
-
-    @Override
-    public Buffer putByte(byte b) {
-        content.putByte(b);
-        return this;
     }
 
     public void reset() {

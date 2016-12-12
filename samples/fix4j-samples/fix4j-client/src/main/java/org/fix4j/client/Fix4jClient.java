@@ -23,11 +23,11 @@
  */
 package org.fix4j.client;
 
+import org.fix4j.client.spec.Fix4jClientMessageFactory;
 import org.fix4j.client.spec.LogonMessage;
-import org.fix4j.engine.*;
-import org.fix4j.engine.log.LogEntry;
-import org.fix4j.engine.log.MessageLog;
-import org.fix4j.engine.log.UnsafeMessageLog;
+import org.fix4j.engine.Application;
+import org.fix4j.engine.ExceptionHandler;
+import org.fix4j.engine.FixEngine;
 import org.fix4j.engine.net.TcpConnectionHandler;
 import org.fix4j.engine.net.TcpConnectionInitiator;
 import org.fix4j.engine.net.TcpExceptionHandler;
@@ -36,10 +36,10 @@ import org.fix4j.engine.session.FixSessionInitiator;
 import org.fix4j.engine.spec.Fix4SessionLifecycle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tools4j.mmap.queue.MappedQueue;
+import org.tools4j.mmap.queue.OneToManyQueue;
 
 import java.io.IOException;
-import java.time.Clock;
-import java.util.function.Consumer;
 
 /**
  * Created by ryan on 4/12/16.
@@ -60,12 +60,12 @@ public class Fix4jClient {
 
         final int TWO_MB = 2 * 1024 * 1024;
         final TcpConnectionInitiator tcpConnectionInitiator = new TcpConnectionInitiator("localhost", 12000, TcpExceptionHandler.throwing(), tcpConnectionHandler);
-        final MessageLog initiatorInbound = new UnsafeMessageLog("./logs/inbound-" + Clock.systemUTC().millis() + ".log", TWO_MB, ExceptionHandler.throwing());
-        final MessageLog initiatorOutbound = new UnsafeMessageLog("./logs/outbound-" + Clock.systemUTC().millis() + ".log", TWO_MB, ExceptionHandler.throwing());
+        final MappedQueue inbound = OneToManyQueue.createOrAppend("./logs/inbound.log");
+        final MappedQueue outbound = OneToManyQueue.createOrAppend("./logs/outbound.log");
         final FixSessionInitiator initiator = new FixSessionInitiator(
                 tcpConnectionInitiator,
-                initiatorInbound,
-                initiatorOutbound,
+                inbound,
+                outbound,
                 () -> new Fix4SessionLifecycle.Initiator(sessionMessageType -> {
                     switch (sessionMessageType) {
                         case LOGON:
@@ -76,7 +76,9 @@ public class Fix4jClient {
                             return logonMessage;
                     }
                     return null;
-                }), Fix4jClientApplication::new
+                }),
+                Fix4jClientMessageFactory::new,
+                Fix4jClientApplication::new
                 );
         fixEngine.register(initiator);
 
@@ -93,14 +95,7 @@ public class Fix4jClient {
 
         private static final Logger log = LoggerFactory.getLogger(Fix4jClientApplication.class);
 
-        private final Consumer<LogEntry> consumer = logEntry -> {
-            log.info("consume {}", logEntry);
-        };
 
-        @Override
-        public Consumer<LogEntry> consume() {
-            return consumer;
-        }
     }
 
 }

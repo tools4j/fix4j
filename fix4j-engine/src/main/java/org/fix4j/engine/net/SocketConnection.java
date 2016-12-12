@@ -24,9 +24,10 @@
 package org.fix4j.engine.net;
 
 import org.fix4j.engine.ExceptionHandler;
-import org.fix4j.engine.OffHeapBuffer;
-import org.fix4j.engine.UnsafeBuffer;
-import org.fix4j.engine.log.MessageLog;
+import org.fix4j.engine.io.OffHeapBuffer;
+import org.fix4j.engine.io.UnsafeBuffer;
+import org.tools4j.mmap.queue.Appender;
+import org.tools4j.mmap.queue.Enumerator;
 
 import java.nio.channels.SocketChannel;
 
@@ -35,9 +36,9 @@ import java.nio.channels.SocketChannel;
  */
 public interface SocketConnection {
 
-    SocketConnection readInto(MessageLog messageLog);
+    SocketConnection readInto(Appender messageLog);
 
-    SocketConnection writeFrom(MessageLog messageLog);
+    SocketConnection writeFrom(Enumerator messageLog);
 
     boolean isConnected();
 
@@ -56,16 +57,19 @@ public interface SocketConnection {
             this.outbound = new UnsafeBuffer(UnsafeBuffer.TEN_MB, exceptionHandler);
         }
 
-        public SocketConnection readInto(MessageLog messageLog) {
+        public SocketConnection readInto(final Appender appender) {
             inbound.readFrom(socketChannel);
             if (inbound.bytesToRead() > 0) {
-                messageLog.readFrom(inbound);
+                // message splitting needs to happen here
+                inbound.writeTo(appender.appendMessage());
             }
             return this;
         }
 
-        public SocketConnection writeFrom(MessageLog messageLog) {
-            messageLog.writeTo(outbound);
+        public SocketConnection writeFrom(final Enumerator enumerator) {
+            while (enumerator.hasNextMessage()) {
+                outbound.readFrom(enumerator.readNextMessage());
+            }
             if (outbound.bytesToRead() > 0) {
                 outbound.writeTo(socketChannel);
             }
@@ -81,12 +85,12 @@ public interface SocketConnection {
     class NotConnected implements SocketConnection {
 
         @Override
-        public SocketConnection readInto(MessageLog messageLog) {
+        public SocketConnection readInto(Appender messageLog) {
             return this;
         }
 
         @Override
-        public SocketConnection writeFrom(MessageLog messageLog) {
+        public SocketConnection writeFrom(Enumerator messageLog) {
             return this;
         }
 

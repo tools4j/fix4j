@@ -23,6 +23,8 @@
  */
 package org.fix4j.engine;
 
+import org.tools4j.mmap.io.MessageWriter;
+
 import java.time.Clock;
 
 /**
@@ -42,17 +44,12 @@ public class StringMessage implements Message {
     }
 
     @Override
-    public byte getByte(int idx) {
-        return (byte) content.charAt(idx);
+    public byte byteAt(int index) {
+        return (byte) content.charAt(index);
     }
 
     @Override
-    public Buffer putByte(byte b) {
-        return this;
-    }
-
-    @Override
-    public Message encode(int sequenceNumber, Clock clock) {
+    public Message encode(int sequenceNumber, Clock clock, MessageWriter appender) {
         return this;
     }
 }

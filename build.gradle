@@ -27,15 +27,19 @@ allprojects {
         include "**/*.java"
         ext.year = Calendar.getInstance().get(Calendar.YEAR)
     }
-}
 
-subprojects {
     repositories {
         mavenCentral()
         maven {
             url "https://oss.sonatype.org/content/repositories/snapshots/"
         }
+        flatDir {
+            dirs "$rootProject.projectDir/lib"
+        }
     }
+}
+
+subprojects {
 
     sourceSets.main.java {
         srcDirs 'src/main/java'
@@ -85,6 +89,7 @@ project(':fix4j-engine') {
         compile 'org.slf4j:slf4j-simple:1.7.21'
         compile 'org.hdrhistogram:HdrHistogram:2.1.9'
         compile 'org.decimal4j:decimal4j:1.0.1'
+        compile 'org.tools4j:mmap:1.0.1-SNAPSHOT'
         testCompile 'org.mockito:mockito-all:1.10.19'
         testCompile 'org.assertj:assertj-core:3.4.1'
         testCompile 'junit:junit:4.12'

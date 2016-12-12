@@ -21,16 +21,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.fix4j.engine.log;
+package org.fix4j.engine.io;
 
+import org.tools4j.mmap.io.MessageReader;
+import org.tools4j.mmap.io.MessageWriter;
 
-import org.fix4j.engine.Message;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 
 /**
- * Created by ryan on 23/06/16.
+ * Created by ryan on 6/06/16.
  */
-public interface LogEntry {
+public interface OffHeapBuffer {
 
-    Message message();
+    OffHeapBuffer readFrom(ReadableByteChannel readableByteChannel);
 
+    OffHeapBuffer readFrom(MessageReader messageReader);
+
+    OffHeapBuffer writeTo(MessageWriter messageWriter);
+
+    OffHeapBuffer writeTo(WritableByteChannel writableByteChannel);
+
+    int bytesToRead();
+
+    @FunctionalInterface
+    interface Header {
+        long mark(OffHeapBuffer offHeapBuffer);
+    }
 }

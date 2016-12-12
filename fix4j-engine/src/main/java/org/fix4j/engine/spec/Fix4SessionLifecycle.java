@@ -24,11 +24,9 @@
 package org.fix4j.engine.spec;
 
 import org.fix4j.engine.Message;
-import org.fix4j.engine.log.LogEntry;
 import org.fix4j.engine.session.FixSession;
 import org.fix4j.engine.session.SessionLifecycle;
 
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -44,7 +42,7 @@ public class Fix4SessionLifecycle {
         HEARTBEAT, TEST_REQUEST, RESEND_REQUEST, REJECT, SEQUENCE_RESET, LOGOUT, LOGON,
     }
 
-    public static class Initiator implements SessionLifecycle, Consumer<LogEntry> {
+    public static class Initiator implements SessionLifecycle {
 
         private State state = State.NOT_LOGGED_ON;
 
@@ -68,33 +66,15 @@ public class Fix4SessionLifecycle {
 
         }
 
-        @Override
-        public Consumer<LogEntry> consume() {
-            return this;
-        }
-
-        @Override
-        public void accept(LogEntry logEntry) {
-
-        }
     }
 
-    public static class Acceptor implements SessionLifecycle, Consumer<LogEntry> {
+    public static class Acceptor implements SessionLifecycle{
 
         @Override
         public void manage(FixSession fixSession) {
 
         }
 
-        @Override
-        public Consumer<LogEntry> consume() {
-            return this;
-        }
-
-        @Override
-        public void accept(LogEntry logEntry) {
-
-        }
     }
 
 }

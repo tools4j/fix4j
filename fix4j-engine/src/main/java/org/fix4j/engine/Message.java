@@ -23,9 +23,12 @@
  */
 package org.fix4j.engine;
 
+import org.fix4j.engine.type.AsciiString;
+import org.tools4j.mmap.io.MessageWriter;
+
 import java.time.Clock;
 
-public interface Message extends Buffer {
+public interface Message extends AsciiString {
 
-    Message encode(int sequenceNumber, Clock clock);
+    Message encode(int sequenceNumber, Clock clock, MessageWriter appender);
 }

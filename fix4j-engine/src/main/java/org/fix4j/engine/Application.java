@@ -23,15 +23,10 @@
  */
 package org.fix4j.engine;
 
-import org.fix4j.engine.log.LogEntry;
-
-import java.util.function.Consumer;
-
 /**
  * Created by ryan on 23/06/16.
  */
 public interface Application {
 
-    Consumer<LogEntry> consume();
 
 }

@@ -23,13 +23,12 @@
  */
 package org.fix4j.client.spec;
 
-import org.fix4j.engine.Buffer;
 import org.fix4j.engine.codec.FixEncoder;
 import org.fix4j.engine.type.AsciiString;
 
-public class Trailer implements Buffer {
+public class Trailer implements AsciiString {
 
-    private final AsciiString content = new AsciiString(32);
+    private final AsciiString.Mutable content = new AsciiString.Mutable(32);
 
     private final FixEncoder fixEncoder = new FixEncoder();
 
@@ -44,16 +43,6 @@ public class Trailer implements Buffer {
         return content.length();
     }
 
-    public byte getByte(int idx) {
-        return (byte) content.charAt(idx);
-    }
-
-    @Override
-    public Buffer putByte(byte b) {
-        content.append((char)b);
-        return this;
-    }
-
     public void reset() {
         content.reset();
     }
@@ -62,7 +51,8 @@ public class Trailer implements Buffer {
         return this;
     }
 
-    public CharSequence content() {
-        return content;
+    @Override
+    public byte byteAt(int index) {
+        return content.byteAt(index);
     }
 }

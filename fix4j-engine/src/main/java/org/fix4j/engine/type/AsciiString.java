@@ -23,75 +23,76 @@
  */
 package org.fix4j.engine.type;
 
-import org.fix4j.engine.Buffer;
-
 import static org.fix4j.engine.util.MathUtil.nextPowerOfTwo;
 
-public class AsciiString implements CharSequence, Buffer {
+/**
+ * Created by ryan on 12/12/16.
+ */
+public interface AsciiString extends CharSequence {
 
-    private byte[] bytes;
-
-    private int pos;
-
-    public AsciiString(final int capacity) {
-        pos = 0;
-        bytes = new byte[nextPowerOfTwo(capacity)];
-    }
-
-    public AsciiString(final CharSequence charSequence) {
-        this(charSequence.length());
-        append(charSequence);
-    }
-
-    /**
-     * Appends the charSequence to the end of this
-     *
-     * @param charSequence  what to append
-     * @return              this
-     */
-    public AsciiString append(final CharSequence charSequence) {
-        for (int i = 0; i < charSequence.length(); i++) {
-            append((byte) charSequence.charAt(i));
-        }
-        return this;
+    @Override
+    default char charAt(int index) {
+        return (char) byteAt(index);
     }
 
     @Override
-    public int length() {
-        return pos;
-    }
-
-    @Override
-    public byte getByte(int idx) {
-        return bytes[idx];
-    }
-
-    @Override
-    public Buffer putByte(byte b) {
-        return append(b);
-    }
-
-    @Override
-    public char charAt(int index) {
-        return (char) getByte(index);
-    }
-
-    @Override
-    public CharSequence subSequence(int start, int end) {
+    default CharSequence subSequence(int start, int end) {
         throw new UnsupportedOperationException("not yet implemented");
     }
 
-    public void reset() {
-        pos = 0;
-    }
+    byte byteAt(int index);
 
-    public AsciiString append(byte b) {
-        bytes[pos] = b;
-        pos++;
-        return this;
-    }
+    class Mutable implements AsciiString {
 
-    public AsciiString append(char c) {
-        return append((byte)c);
+        private byte[] bytes;
+
+        private int pos;
+
+        public Mutable(final int capacity) {
+            pos = 0;
+            bytes = new byte[nextPowerOfTwo(capacity)];
+        }
+
+        public Mutable(final CharSequence charSequence) {
+            this(charSequence.length());
+            append(charSequence);
+        }
+
+        /**
+         * Appends the charSequence to the end of this
+         *
+         * @param charSequence  what to append
+         * @return              this
+         */
+        public Mutable append(final CharSequence charSequence) {
+            for (int i = 0; i < charSequence.length(); i++) {
+                append((byte) charSequence.charAt(i));
+            }
+            return this;
+        }
+
+        @Override
+        public int length() {
+            return pos;
+        }
+
+        @Override
+        public byte byteAt(int index) {
+            return bytes[index];
+        }
+
+        public void reset() {
+            pos = 0;
+        }
+
+        public Mutable append(byte b) {
+            bytes[pos] = b;
+            pos++;
+            return this;
+        }
+
+        public Mutable append(char c) {
+            return append((byte)c);
+        }
     }
 }
