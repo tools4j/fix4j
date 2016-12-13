@@ -7,5 +7,5 @@ import org.fix4j.engine.type.AsciiString;
  */
 public interface MessageFactory {
 
-    Message create(AsciiString message);
+    Message.Decodable create(AsciiString content);
 }

@@ -23,6 +23,8 @@
  */
 package org.fix4j.engine.session;
 
+import org.fix4j.engine.Message;
+
 /**
  * Created by ryan on 22/06/16.
  */
@@ -30,4 +32,5 @@ public interface SessionLifecycle {
 
     void manage(FixSession fixSession);
 
+    void onMessage(Message.Decodable message);
 }

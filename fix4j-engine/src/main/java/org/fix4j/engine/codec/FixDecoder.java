@@ -9,6 +9,8 @@ import java.io.IOException;
  */
 public class FixDecoder implements TagDecoder, ValueDecoder {
 
+    public static final char FIELD_DELIMETER = '\u0001';
+    public static final char FIELD_SEPARATOR = '=';
     private AsciiString content;
 
     private int tag;
@@ -23,11 +25,12 @@ public class FixDecoder implements TagDecoder, ValueDecoder {
 
     @Override
     public TagDecoder tag(final ValueHandler valueHandler) {
+        moveToTagStart();
         int tag = 0;
         byte c;
         for (int i = 0; index < content.length(); i++) {
             c = content.byteAt(index++);
-            if (c == '=') {
+            if (c == FIELD_SEPARATOR) {
                 break;
             }
             tag = (tag * 10) + (c - '0');
@@ -37,11 +40,26 @@ public class FixDecoder implements TagDecoder, ValueDecoder {
     }
 
     @Override
+    public boolean hasNext() {
+        return index < content.length();
+    }
+
+    private void moveToTagStart() {
+        if (index == 0) {
+            return;
+        }
+        byte b = content.byteAt(index);
+        while (b != FIELD_DELIMETER) {
+            b = content.byteAt(index++);
+        }
+    }
+
+    @Override
     public TagDecoder getString(Appendable appendable) {
         byte c;
         for (int i = 0; index < content.length(); i++) {
             c = content.byteAt(index++);
-            if (c == '\u0001') {
+            if (c == FIELD_DELIMETER) {
                 break;
             }
             try {

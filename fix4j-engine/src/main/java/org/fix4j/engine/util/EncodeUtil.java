@@ -23,8 +23,51 @@
  */
 package org.fix4j.engine.util;
 
+import org.fix4j.engine.type.AsciiString;
+
 /**
  * Created by ryan on 5/12/16.
  */
 public class EncodeUtil {
+
+    private static final ThreadLocal<StringBuilder> checksumTL = new ThreadLocal<StringBuilder>() {
+        @Override
+        protected StringBuilder initialValue() {
+            return new StringBuilder(3);
+        }
+    };
+
+    public static CharSequence generateChecksum(
+            final AsciiString header,
+            final AsciiString message,
+            final AsciiString trailer
+    ) {
+        final StringBuilder sb = checksumTL.get();
+        sb.setLength(0);
+        long checksum = 0;
+        for (int i = 0; i < header.length(); i++) {
+            checksum += header.byteAt(i);
+        }
+
+        for (int i = 0; i < message.length(); i++) {
+            checksum += message.byteAt(i);
+        }
+
+        for (int i = 0; i < trailer.length(); i++) {
+            checksum += trailer.byteAt(i);
+        }
+
+        checksum %= 256;
+
+        if (checksum < 100) {
+            sb.append('0');
+        }
+        if (checksum < 10) {
+            sb.append('0');
+        }
+        sb.append(checksum);
+        return sb;
+    }
+
+
 }

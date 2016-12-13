@@ -30,18 +30,14 @@ import org.tools4j.mmap.io.MessageWriter;
 
 import java.time.Clock;
 
-public final class LogonMessage implements Message {
+import static org.fix4j.engine.util.EncodeUtil.generateChecksum;
 
-    private static final ThreadLocal<StringBuilder> checksumTL = new ThreadLocal<StringBuilder>() {
-        @Override
-        protected StringBuilder initialValue() {
-            return new StringBuilder(3);
-        }
-    };
+public class LogonMessage implements SpecMessage {
 
-    private final FixEncoder fixEncoder = new FixEncoder();
+    private final Encoder encoder = new Encoder();
+    private final Decoder decoder = new Decoder();
+
     private final Header header = new Header();
-    private final AsciiString.Mutable content = new AsciiString.Mutable(128);
     private final Trailer trailer = new Trailer();
 
     private int encryptMethod;
@@ -50,10 +46,8 @@ public final class LogonMessage implements Message {
 
     private boolean resetSeqNumFlag;
 
-    public void reset() {
-        header.reset();
-        content.reset();
-        trailer.reset();
+    public Message.Decodable decodable(final AsciiString content) {
+        return decoder.wrap(content);
     }
 
     public Header header() {
@@ -79,77 +73,70 @@ public final class LogonMessage implements Message {
         return this;
     }
 
-    @Override
-    public int length() {
-        return header.length() + content.length() + trailer.length();
+    public Encodable encodable() {
+        return encoder;
     }
 
-    @Override
-    public byte byteAt(int idx) {
-        if (idx < header.length()) {
-            return header.byteAt(idx);
-        } else if (idx < header.length() + content.length()) {
-            return (byte) content.charAt(idx - header.length());
-        } else if (idx < length()) {
-            return trailer.byteAt(idx - header.length() - content.length());
+    public final class Encoder implements Message.Encodable, AsciiString {
+
+        private final FixEncoder fixEncoder = new FixEncoder();
+        private final AsciiString.Mutable content = new AsciiString.Mutable(128);
+
+        @Override
+        public void encode(final int sequenceNumber, final Clock clock, final MessageWriter messageWriter) {
+            fixEncoder.wrap(content)
+                    .tag(98).value(encryptMethod)
+                    .tag(108).value(heartBtInt)
+                    .tag(141).value(resetSeqNumFlag);
+
+            header
+                    .msgType("A")
+                    .msgSeqNum(sequenceNumber)
+                    .sendingTime(clock.millis())
+                    .encode();
+
+            trailer
+                    .encode();
+            header
+                    .bodyLength(header.content().length() + content.length() + trailer.length());
+
+            trailer
+                    .checksum(generateChecksum(header, content, trailer));
+
+            messageWriter.putStringAscii(this);
         }
-        throw new IndexOutOfBoundsException("index[" + idx + "], length [" + length() + "]");
+
+        @Override
+        public int length() {
+            return header.length() + content.length() + trailer.length();
+        }
+
+        @Override
+        public byte byteAt(int idx) {
+            if (idx < header.length()) {
+                return header.byteAt(idx);
+            } else if (idx < header.length() + content.length()) {
+                return (byte) content.charAt(idx - header.length());
+            } else if (idx < length()) {
+                return trailer.byteAt(idx - header.length() - content.length());
+            }
+            throw new IndexOutOfBoundsException("index[" + idx + "], length [" + length() + "]");
+        }
     }
 
-    @Override
-    public Message encode(final int sequenceNumber, final Clock clock, final MessageWriter messageWriter) {
-        fixEncoder.wrap(content)
-                .tag(98).value(encryptMethod)
-                .tag(108).value(heartBtInt)
-                .tag(141).value(resetSeqNumFlag);
+    public final class Decoder implements Message.Decodable {
 
-        header
-                .msgType("A")
-                .msgSeqNum(sequenceNumber)
-                .sendingTime(clock.millis())
-                .encode();
+        private AsciiString content;
 
-        trailer
-                .encode();
-        header
-                .bodyLength(header.content().length() + content.length() + trailer.length());
+        public Decodable wrap(final AsciiString content) {
+            this.content = content;
+            return this;
+        }
 
-        trailer
-                .checksum(generateChecksum(header, content, trailer));
-
-        messageWriter.putStringAscii(this);
-        return this;
+        @Override
+        public MsgType msgType() {
+            return MsgType.LOGON;
+        }
     }
 
-    private static CharSequence generateChecksum(
-            final AsciiString header,
-            final AsciiString message,
-            final AsciiString trailer
-    ) {
-        final StringBuilder sb = checksumTL.get();
-        sb.setLength(0);
-        long checksum = 0;
-        for (int i = 0; i < header.length(); i++) {
-            checksum += header.byteAt(i);
-        }
-
-        for (int i = 0; i < message.length(); i++) {
-            checksum += message.byteAt(i);
-        }
-
-        for (int i = 0; i < trailer.length(); i++) {
-            checksum += trailer.byteAt(i);
-        }
-
-        checksum %= 256;
-
-        if (checksum < 100) {
-            sb.append('0');
-        }
-        if (checksum < 10) {
-            sb.append('0');
-        }
-        sb.append(checksum);
-        return sb;
-    }
 }

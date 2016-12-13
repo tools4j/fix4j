@@ -3,26 +3,40 @@ package org.fix4j.client.spec;
 import org.fix4j.engine.Message;
 import org.fix4j.engine.MessageFactory;
 import org.fix4j.engine.codec.FixDecoder;
+import org.fix4j.engine.codec.TagDecoder;
 import org.fix4j.engine.codec.ValueDecoder;
 import org.fix4j.engine.codec.ValueHandler;
 import org.fix4j.engine.type.AsciiString;
 
 import java.io.IOException;
+import java.util.EnumMap;
 
 public class Fix4jClientMessageFactory implements MessageFactory {
 
     private final FixDecoder fixDecoder = new FixDecoder();
 
-    private final MessageTypeHandler messageTypeHandler = new MessageTypeHandler();
+    private final HeaderHandler headerHandler = new HeaderHandler();
 
-    @Override
-    public Message create(final AsciiString message) {
-        fixDecoder.wrap(message).tag(messageTypeHandler);
-        System.out.println(messageTypeHandler.msgType);
-        return null;
+    private final EnumMap<MsgType, SpecMessage> cache = new EnumMap<>(MsgType.class);
+
+    public Fix4jClientMessageFactory() {
+        for (final MsgType msgType : MsgType.values()) {
+            cache.put(msgType, msgType.message());
+        }
     }
 
-    private final class MessageTypeHandler implements ValueHandler, Appendable {
+    @Override
+    public Message.Decodable create(final AsciiString content) {
+        TagDecoder tagDecoder = fixDecoder.wrap(content);
+        while (tagDecoder.hasNext() && headerHandler.msgType == null) {
+            tagDecoder.tag(headerHandler);
+        }
+
+        final SpecMessage specMessage = cache.get(headerHandler.msgType);
+        return specMessage.decodable(content);
+    }
+
+    private final class HeaderHandler implements ValueHandler, Appendable {
 
         private final MsgType.SearchByCode searchByCode = new MsgType.SearchByCode();
 

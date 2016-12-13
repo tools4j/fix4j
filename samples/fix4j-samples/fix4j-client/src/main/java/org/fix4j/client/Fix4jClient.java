@@ -25,14 +25,15 @@ package org.fix4j.client;
 
 import org.fix4j.client.spec.Fix4jClientMessageFactory;
 import org.fix4j.client.spec.LogonMessage;
+import org.fix4j.client.spec.MsgType;
 import org.fix4j.engine.Application;
 import org.fix4j.engine.ExceptionHandler;
 import org.fix4j.engine.FixEngine;
+import org.fix4j.engine.Message;
 import org.fix4j.engine.net.TcpConnectionHandler;
 import org.fix4j.engine.net.TcpConnectionInitiator;
 import org.fix4j.engine.net.TcpExceptionHandler;
-import org.fix4j.engine.session.FixSessionConfiguration;
-import org.fix4j.engine.session.FixSessionInitiator;
+import org.fix4j.engine.session.*;
 import org.fix4j.engine.spec.Fix4SessionLifecycle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +41,8 @@ import org.tools4j.mmap.queue.MappedQueue;
 import org.tools4j.mmap.queue.OneToManyQueue;
 
 import java.io.IOException;
+
+import static org.fix4j.client.spec.MsgType.LOGON;
 
 /**
  * Created by ryan on 4/12/16.
@@ -62,21 +65,23 @@ public class Fix4jClient {
         final TcpConnectionInitiator tcpConnectionInitiator = new TcpConnectionInitiator("localhost", 12000, TcpExceptionHandler.throwing(), tcpConnectionHandler);
         final MappedQueue inbound = OneToManyQueue.createOrAppend("./logs/inbound.log");
         final MappedQueue outbound = OneToManyQueue.createOrAppend("./logs/outbound.log");
+        final SessionMessageFactory sessionMessageFactory = messageType -> {
+            switch (messageType) {
+                case LOGON:
+                    final LogonMessage logonMessage = new LogonMessage();
+                    logonMessage.header()
+                            .senderCompId(fixSessionConfiguration.senderCompId())
+                            .targetCompId(fixSessionConfiguration.targetCompId());
+                    return logonMessage.encodable();
+            }
+            return null;
+        };
+
         final FixSessionInitiator initiator = new FixSessionInitiator(
                 tcpConnectionInitiator,
                 inbound,
                 outbound,
-                () -> new Fix4SessionLifecycle.Initiator(sessionMessageType -> {
-                    switch (sessionMessageType) {
-                        case LOGON:
-                            final LogonMessage logonMessage = new LogonMessage();
-                            logonMessage.header()
-                                    .senderCompId(fixSessionConfiguration.senderCompId())
-                                    .targetCompId(fixSessionConfiguration.targetCompId());
-                            return logonMessage;
-                    }
-                    return null;
-                }),
+                () -> new Fix4SessionLifecycle.Initiator(sessionMessageFactory, new Fix4jClientSessionMessageHandler()),
                 Fix4jClientMessageFactory::new,
                 Fix4jClientApplication::new
                 );
@@ -96,6 +101,27 @@ public class Fix4jClient {
         private static final Logger log = LoggerFactory.getLogger(Fix4jClientApplication.class);
 
 
+        @Override
+        public void onMessage(Message.Decodable message) {
+            final MsgType msgType = message.msgType();
+            switch (msgType) {
+                case LOGON:
+                    final LogonMessage.Decoder decoder = message.as(LogonMessage.Decoder.class);
+            }
+        }
+    }
+
+    private static final class Fix4jClientSessionMessageHandler implements SessionMessageHandler {
+
+        @Override
+        public void onMessage(Message.Decodable message) {
+            final MsgType msgType = message.msgType();
+            switch (msgType) {
+                case LOGON:
+                    final LogonMessage.Decoder decoder = message.as(LogonMessage.Decoder.class);
+            }
+
+        }
     }
 
 }

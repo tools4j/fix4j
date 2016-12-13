@@ -23,10 +23,7 @@
  */
 package org.fix4j.engine;
 
-/**
- * Created by ryan on 23/06/16.
- */
 public interface Application {
 
-
+    void onMessage(Message.Decodable message);
 }

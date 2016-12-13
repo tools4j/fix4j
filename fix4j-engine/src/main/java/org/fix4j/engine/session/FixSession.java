@@ -43,6 +43,16 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class FixSession {
 
+    public enum MessageType {
+        HEARTBEAT,
+        TEST_REQUEST,
+        RESEND_REQUEST,
+        REJECT,
+        SEQUENCE_RESET,
+        LOGOUT,
+        LOGON,
+    }
+
     private final SocketConnection socketConnection;
 
     private final SessionLifecycle sessionLifecycle;
@@ -79,13 +89,13 @@ public class FixSession {
         this.application = application;
         this.inbound = inbound;
         this.inboundAppender = inbound.appender();
-        inboundEnumerator = inbound.enumerator();
+        this.inboundEnumerator = inbound.enumerator();
         this.outbound = outbound;
         this.outboundAppender = outbound.appender();
         this.outboundEnumerator = outbound.enumerator();
     }
 
-    public FixSession send(Message message) {
+    public FixSession send(final Message.Encodable message) {
         final int nextSequenceNumber = this.sequenceNumber.incrementAndGet();
         final Clock systemUTC = Clock.systemUTC();
         final MessageWriter messageWriter = outboundAppender.appendMessage();
@@ -110,10 +120,10 @@ public class FixSession {
         while (inboundEnumerator.hasNextMessage()) {
             final MessageReader messageReader = inboundEnumerator.readNextMessage();
             messageReader.getStringAscii(readAsAsciiString.reset());
-            final Message message = messageFactory.create(readAsAsciiString.asciiString);
+            final Message.Decodable message = messageFactory.create(readAsAsciiString.asciiString);
 
-//            sessionLifecycle.onMessage(messageReader);
-//            application.onMessage(messageReader);
+            sessionLifecycle.onMessage(message);
+            application.onMessage(message);
             messageReader.finishReadMessage();
         }
 

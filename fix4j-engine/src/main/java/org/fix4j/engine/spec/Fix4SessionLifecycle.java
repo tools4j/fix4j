@@ -26,8 +26,8 @@ package org.fix4j.engine.spec;
 import org.fix4j.engine.Message;
 import org.fix4j.engine.session.FixSession;
 import org.fix4j.engine.session.SessionLifecycle;
-
-import java.util.function.Function;
+import org.fix4j.engine.session.SessionMessageFactory;
+import org.fix4j.engine.session.SessionMessageHandler;
 
 /**
  * Created by ryan on 23/06/16.
@@ -38,25 +38,24 @@ public class Fix4SessionLifecycle {
         NOT_LOGGED_ON, LOGON_SENT, LOGGED_ON
     }
 
-    public enum SessionMessageType {
-        HEARTBEAT, TEST_REQUEST, RESEND_REQUEST, REJECT, SEQUENCE_RESET, LOGOUT, LOGON,
-    }
-
     public static class Initiator implements SessionLifecycle {
 
         private State state = State.NOT_LOGGED_ON;
 
-        private final Function<SessionMessageType, Message> messageFactory;
+        private final SessionMessageFactory messageFactory;
 
-        public Initiator(Function<SessionMessageType, Message> messageFactory) {
+        private final SessionMessageHandler messageHandler;
+
+        public Initiator(final SessionMessageFactory messageFactory, final SessionMessageHandler messageHandler) {
             this.messageFactory = messageFactory;
+            this.messageHandler = messageHandler;
         }
 
         @Override
-        public void manage(FixSession fixSession) {
+        public void manage(final FixSession fixSession) {
             switch (state) {
                 case NOT_LOGGED_ON:
-                    fixSession.send(messageFactory.apply(SessionMessageType.LOGON));
+                    fixSession.send(messageFactory.create(FixSession.MessageType.LOGON));
                     state = State.LOGON_SENT;
                     break;
                 case LOGON_SENT:
@@ -66,12 +65,22 @@ public class Fix4SessionLifecycle {
 
         }
 
+        @Override
+        public void onMessage(final Message.Decodable message) {
+            messageHandler.onMessage(message);
+        }
+
     }
 
     public static class Acceptor implements SessionLifecycle{
 
         @Override
         public void manage(FixSession fixSession) {
+
+        }
+
+        @Override
+        public void onMessage(Message.Decodable message) {
 
         }
 

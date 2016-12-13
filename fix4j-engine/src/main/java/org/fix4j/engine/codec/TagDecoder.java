@@ -6,4 +6,6 @@ package org.fix4j.engine.codec;
 public interface TagDecoder {
 
     TagDecoder tag(ValueHandler valueHandler);
+
+    boolean hasNext();
 }

@@ -23,12 +23,30 @@
  */
 package org.fix4j.engine;
 
-import org.fix4j.engine.type.AsciiString;
+import org.fix4j.engine.session.FixSession;
 import org.tools4j.mmap.io.MessageWriter;
 
 import java.time.Clock;
+import java.util.Optional;
 
-public interface Message extends AsciiString {
+public interface Message {
 
-    Message encode(int sequenceNumber, Clock clock, MessageWriter appender);
+    /**
+     * Created by ryan on 13/12/16.
+     */
+    interface Encodable {
+        void encode(final int sequenceNumber, final Clock clock, final MessageWriter messageWriter);
+    }
+
+    interface Decodable {
+        <T extends Type> T msgType();
+
+        default <T extends Decodable> T as(Class<T> decoderClass) {
+            return decoderClass.cast(this);
+        }
+    }
+
+    interface Type {
+        Optional<FixSession.MessageType> asSessionType();
+    }
 }
