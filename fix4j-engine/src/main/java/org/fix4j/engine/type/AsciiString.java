@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 fix4j.org (tools4j.org)
+ * Copyright (c) 2016-2017 fix4j.org (tools4j.org)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -93,6 +93,10 @@ public interface AsciiString extends CharSequence {
 
         public Mutable append(char c) {
             return append((byte)c);
+        }
+
+        public String toString() {
+            return new String(bytes, 0, length());
         }
     }
 }

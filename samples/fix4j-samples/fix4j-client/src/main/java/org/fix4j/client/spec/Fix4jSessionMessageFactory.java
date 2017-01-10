@@ -21,20 +21,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.fix4j.engine.tag.type;
+package org.fix4j.client.spec;
 
-import org.fix4j.engine.exception.InvalidValueException;
-import org.fix4j.engine.tag.impl.BasicIntTag;
-import org.fix4j.engine.util.ParseUtil;
+import org.fix4j.engine.Message;
+import org.fix4j.engine.session.FixSession;
+import org.fix4j.engine.session.FixSessionConfiguration;
+import org.fix4j.engine.session.SessionMessageFactory;
 
-public class LengthTag extends BasicIntTag {
+/**
+ * Created by ryan on 14/12/16.
+ */
+public class Fix4jSessionMessageFactory implements SessionMessageFactory {
 
-	public LengthTag(final int tag, final String name) {
-		super(tag, "Length", name);
-	}
+    private final FixSessionConfiguration fixSessionConfiguration;
 
-	public int convertFrom(CharSequence value, int start, int end) throws InvalidValueException {
-		return ParseUtil.parseNonNegativeInt(this, value, start, end);
-	}
+    public Fix4jSessionMessageFactory(FixSessionConfiguration fixSessionConfiguration) {
+        this.fixSessionConfiguration = fixSessionConfiguration;
+    }
 
+    @Override
+    public Message.Encodable create(FixSession.MessageType messageType) {
+        switch (messageType) {
+            case LOGON:
+                final LogonMessage logonMessage = new LogonMessage();
+                logonMessage.heartBtInt(fixSessionConfiguration.heartbeatInterval());
+                logonMessage.header()
+                        .senderCompId(fixSessionConfiguration.senderCompId())
+                        .targetCompId(fixSessionConfiguration.targetCompId());
+                return logonMessage.encodable();
+        }
+        return null;
+    }
 }

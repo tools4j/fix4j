@@ -21,15 +21,50 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.fix4j.engine.session;
+package org.fix4j.client.spec;
 
 import org.fix4j.engine.Message;
+import org.fix4j.engine.codec.FixDecoder;
+import org.fix4j.engine.codec.ValueHandler;
+import org.fix4j.engine.type.AsciiString;
 
 /**
- * Created by ryan on 13/12/16.
+ * Created by ryan on 14/12/16.
  */
-public interface SessionMessageHandler {
+public class TestRequest implements SpecMessage {
 
-    void onMessage(SessionManagement sessionManagement, Message.Decodable message);
+    private final Decoder decoder = new Decoder();
 
+    public final class Decoder implements Decodable {
+
+        private final FixDecoder fixDecoder = new FixDecoder();
+        private final AsciiString.Mutable testReqId = new AsciiString.Mutable(128);
+        private ValueHandler decoding = (tag, valueDecoder) -> {
+            switch (tag) {
+                case 112:
+                    valueDecoder.getString(testReqId);
+                    break;
+            }
+        };
+
+        private Decoder wrap(final AsciiString content) {
+            fixDecoder.wrap(content);
+            return this;
+        }
+
+        @Override
+        public MsgType msgType() {
+            return MsgType.TEST_REQUEST;
+        }
+
+        public AsciiString testReqId() {
+            fixDecoder.tag(decoding);
+            return testReqId;
+        }
+    }
+
+    @Override
+    public Decodable decodable(final AsciiString content) {
+        return decoder.wrap(content);
+    }
 }

@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 fix4j.org (tools4j.org)
+ * Copyright (c) 2016-2017 fix4j.org (tools4j.org)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,10 @@ public class FixSessionConfiguration {
 
     private CharSequence targetCompId;
 
+    private CharSequence store;
+
+    private int heartbeatInterval;
+
     public FixSessionConfiguration senderCompId(final CharSequence senderCompId) {
         this.senderCompId = senderCompId;
         return this;
@@ -36,6 +40,16 @@ public class FixSessionConfiguration {
 
     public FixSessionConfiguration targetCompId(final CharSequence targetCompId) {
         this.targetCompId = targetCompId;
+        return this;
+    }
+
+    public FixSessionConfiguration heartbeatInterval(final int heartbeatInterval) {
+        this.heartbeatInterval = heartbeatInterval;
+        return this;
+    }
+
+    public FixSessionConfiguration store(final CharSequence store) {
+        this.store = store;
         return this;
     }
 
@@ -47,4 +61,11 @@ public class FixSessionConfiguration {
         return targetCompId;
     }
 
+    public int heartbeatInterval() {
+        return heartbeatInterval;
+    }
+
+    public CharSequence store() {
+        return store;
+    }
 }

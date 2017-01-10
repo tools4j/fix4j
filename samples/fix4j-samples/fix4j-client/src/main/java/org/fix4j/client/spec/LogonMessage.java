@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 fix4j.org (tools4j.org)
+ * Copyright (c) 2016-2017 fix4j.org (tools4j.org)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,8 +46,12 @@ public class LogonMessage implements SpecMessage {
 
     private boolean resetSeqNumFlag;
 
-    public Message.Decodable decodable(final AsciiString content) {
+    public Decodable decodable(final AsciiString content) {
         return decoder.wrap(content);
+    }
+
+    public Encodable encodable() {
+        return encoder;
     }
 
     public Header header() {
@@ -71,10 +75,6 @@ public class LogonMessage implements SpecMessage {
     public LogonMessage resetSeqNumFlag(final boolean resetSeqNumFlag) {
         this.resetSeqNumFlag = resetSeqNumFlag;
         return this;
-    }
-
-    public Encodable encodable() {
-        return encoder;
     }
 
     public final class Encoder implements Message.Encodable, AsciiString {

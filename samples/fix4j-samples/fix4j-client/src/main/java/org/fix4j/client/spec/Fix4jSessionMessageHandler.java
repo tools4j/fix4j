@@ -21,20 +21,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.fix4j.engine.tag.type;
+package org.fix4j.client.spec;
 
-import org.fix4j.engine.exception.InvalidValueException;
-import org.fix4j.engine.tag.impl.BasicIntTag;
-import org.fix4j.engine.util.ParseUtil;
+import org.fix4j.engine.Message;
+import org.fix4j.engine.session.SessionLifecycle;
+import org.fix4j.engine.session.SessionManagement;
+import org.fix4j.engine.session.SessionMessageHandler;
 
-public class LengthTag extends BasicIntTag {
+/**
+ * Created by ryan on 14/12/16.
+ */
+public final class Fix4jSessionMessageHandler implements SessionMessageHandler {
 
-	public LengthTag(final int tag, final String name) {
-		super(tag, "Length", name);
-	}
+    @Override
+    public void onMessage(final SessionManagement sessionManagement, final Message.Decodable message) {
+        final MsgType msgType = message.msgType();
+        switch (msgType) {
+            case LOGON: {
+                final LogonMessage.Decoder decoder = message.as(LogonMessage.Decoder.class);
+                System.out.println("Received Logon");
+                sessionManagement.loggedOn();
+                break;
+            }
+            case TEST_REQUEST: {
+                final TestRequest.Decoder decoder = message.as(TestRequest.Decoder.class);
+                System.out.println("Received TestRequest");
+                sessionManagement.heartbeat(decoder.testReqId());
+                break;
+            }
+        }
 
-	public int convertFrom(CharSequence value, int start, int end) throws InvalidValueException {
-		return ParseUtil.parseNonNegativeInt(this, value, start, end);
-	}
-
+    }
 }

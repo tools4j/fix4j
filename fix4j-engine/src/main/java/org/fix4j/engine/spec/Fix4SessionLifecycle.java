@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 fix4j.org (tools4j.org)
+ * Copyright (c) 2016-2017 fix4j.org (tools4j.org)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +24,8 @@
 package org.fix4j.engine.spec;
 
 import org.fix4j.engine.Message;
-import org.fix4j.engine.session.FixSession;
-import org.fix4j.engine.session.SessionLifecycle;
-import org.fix4j.engine.session.SessionMessageFactory;
-import org.fix4j.engine.session.SessionMessageHandler;
+import org.fix4j.engine.session.*;
+import org.fix4j.engine.type.AsciiString;
 
 /**
  * Created by ryan on 23/06/16.
@@ -38,13 +36,15 @@ public class Fix4SessionLifecycle {
         NOT_LOGGED_ON, LOGON_SENT, LOGGED_ON
     }
 
-    public static class Initiator implements SessionLifecycle {
+    public static class Initiator implements SessionLifecycle, SessionManagement {
 
         private State state = State.NOT_LOGGED_ON;
 
         private final SessionMessageFactory messageFactory;
 
         private final SessionMessageHandler messageHandler;
+
+        private boolean sendHeartbeat;
 
         public Initiator(final SessionMessageFactory messageFactory, final SessionMessageHandler messageHandler) {
             this.messageFactory = messageFactory;
@@ -61,15 +61,30 @@ public class Fix4SessionLifecycle {
                 case LOGON_SENT:
                     // todo - check timing to see if we should timeout or error or something
                     break;
+                case LOGGED_ON:
+                    if (sendHeartbeat) {
+                        System.out.print("Send Heartbeat");
+                        sendHeartbeat = false;
+                    }
+                    break;
             }
 
         }
 
         @Override
         public void onMessage(final Message.Decodable message) {
-            messageHandler.onMessage(message);
+            messageHandler.onMessage(this, message);
         }
 
+        @Override
+        public void loggedOn() {
+            state = State.LOGGED_ON;
+        }
+
+        @Override
+        public void heartbeat(AsciiString testRequestId) {
+            sendHeartbeat = true;
+        }
     }
 
     public static class Acceptor implements SessionLifecycle{
