@@ -24,9 +24,16 @@
 package org.fix4j.engine.session;
 
 import org.fix4j.engine.Message;
+import org.fix4j.engine.type.AsciiString;
 
 public interface SessionMessageFactory {
 
     Message.Encodable create(FixSession.MessageType messageType);
+
+    Message.Encodable logon();
+
+    Message.Encodable heartbeat();
+
+    Message.Encodable heartbeat(AsciiString testReqId);
 
 }

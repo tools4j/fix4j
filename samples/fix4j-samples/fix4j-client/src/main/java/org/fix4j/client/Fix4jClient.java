@@ -69,7 +69,7 @@ public class Fix4jClient {
                 outbound,
                 () -> new Fix4SessionLifecycle.Initiator(sessionMessageFactory, new Fix4jSessionMessageHandler()),
                 Fix4jClientMessageFactory::new,
-                Fix4jClientApplication::new
+                () -> new Fix4jClientApplication(fixSessionConfiguration)
                 );
         fixEngine.register(initiator);
 

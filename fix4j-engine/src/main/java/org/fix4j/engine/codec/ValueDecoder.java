@@ -30,7 +30,9 @@ import org.fix4j.engine.type.AsciiString;
  */
 public interface ValueDecoder {
 
-    TagDecoder getString(Appendable appendable);
+    void getString(Appendable appendable);
 
-    TagDecoder getString(AsciiString.Mutable asciiString);
+    void getString(AsciiString.Mutable asciiString);
+
+    int getInt();
 }

@@ -116,19 +116,21 @@ public class FixSession {
     }
 
     public FixSession process() {
+        final SessionLifecycle.Bound bound = sessionLifecycle.bind(this);
+
         // read messages from inbound
-        while (inboundEnumerator.hasNextMessage()) {
+        if (inboundEnumerator.hasNextMessage()) {
             final MessageReader messageReader = inboundEnumerator.readNextMessage();
             messageReader.getStringAscii(readAsAsciiString.reset());
             final Message.Decodable message = messageFactory.create(readAsAsciiString.asciiString);
 
-            sessionLifecycle.onMessage(message);
-            application.onMessage(message);
+            bound.onMessage(message);
+            application.onMessage(message, this);
             messageReader.finishReadMessage();
         }
 
         // add heartbeat or test request if required.
-        sessionLifecycle.manage(this);
+        bound.manage();
         return this;
     }
 

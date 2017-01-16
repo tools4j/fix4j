@@ -71,39 +71,54 @@ public class FixDecoder implements TagDecoder, ValueDecoder {
         if (index == 0) {
             return;
         }
-        byte b = content.byteAt(index);
+        byte b = content.byteAt(index++);
         while (b != FIELD_DELIMETER) {
             b = content.byteAt(index++);
         }
     }
 
     @Override
-    public TagDecoder getString(Appendable appendable) {
+    public void getString(Appendable appendable) {
         byte c;
         for (int i = 0; index < content.length(); i++) {
-            c = content.byteAt(index++);
+            c = content.byteAt(index);
             if (c == FIELD_DELIMETER) {
                 break;
             }
+            index++;
             try {
                 appendable.append((char) c);
             } catch (IOException e) {
                 // nothing right now.
             }
         }
-        return this;
     }
 
     @Override
-    public TagDecoder getString(final AsciiString.Mutable asciiString) {
+    public void getString(final AsciiString.Mutable asciiString) {
         byte c;
         for (int i = 0; index < content.length(); i++) {
-            c = content.byteAt(index++);
+            c = content.byteAt(index);
             if (c == FIELD_DELIMETER) {
                 break;
             }
+            index++;
             asciiString.append((char) c);
         }
-        return this;
+    }
+
+    @Override
+    public int getInt() {
+        int result = 0;
+        byte c;
+        for (int i = 0; index < content.length(); i++) {
+            c = content.byteAt(index);
+            if (c == FIELD_DELIMETER) {
+                break;
+            }
+            index++;
+            result = result * 10 + (c - '0');
+        }
+        return result;
     }
 }

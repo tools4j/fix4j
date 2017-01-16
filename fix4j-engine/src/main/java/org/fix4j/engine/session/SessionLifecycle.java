@@ -30,7 +30,11 @@ import org.fix4j.engine.Message;
  */
 public interface SessionLifecycle {
 
-    void manage(FixSession fixSession);
+    Bound bind(FixSession fixSession);
 
-    void onMessage(Message.Decodable message);
+    interface Bound {
+        void manage();
+
+        void onMessage(Message.Decodable message);
+    }
 }

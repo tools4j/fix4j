@@ -36,7 +36,7 @@ public class Fix4SessionLifecycle {
         NOT_LOGGED_ON, LOGON_SENT, LOGGED_ON
     }
 
-    public static class Initiator implements SessionLifecycle, SessionManagement {
+    public static class Initiator implements SessionLifecycle, SessionLifecycle.Bound, SessionManagement {
 
         private State state = State.NOT_LOGGED_ON;
 
@@ -44,7 +44,9 @@ public class Fix4SessionLifecycle {
 
         private final SessionMessageHandler messageHandler;
 
-        private boolean sendHeartbeat;
+        private transient FixSession fixSession;
+
+        private Message.Encodable heartbeat;
 
         public Initiator(final SessionMessageFactory messageFactory, final SessionMessageHandler messageHandler) {
             this.messageFactory = messageFactory;
@@ -52,7 +54,7 @@ public class Fix4SessionLifecycle {
         }
 
         @Override
-        public void manage(final FixSession fixSession) {
+        public void manage() {
             switch (state) {
                 case NOT_LOGGED_ON:
                     fixSession.send(messageFactory.create(FixSession.MessageType.LOGON));
@@ -62,10 +64,7 @@ public class Fix4SessionLifecycle {
                     // todo - check timing to see if we should timeout or error or something
                     break;
                 case LOGGED_ON:
-                    if (sendHeartbeat) {
-                        System.out.print("Send Heartbeat");
-                        sendHeartbeat = false;
-                    }
+                    // todo - send heartbeat if one is not sent or test request if we need to
                     break;
             }
 
@@ -82,23 +81,16 @@ public class Fix4SessionLifecycle {
         }
 
         @Override
-        public void heartbeat(AsciiString testRequestId) {
-            sendHeartbeat = true;
-        }
-    }
-
-    public static class Acceptor implements SessionLifecycle{
-
-        @Override
-        public void manage(FixSession fixSession) {
-
+        public void heartbeat(final AsciiString testReqId) {
+            System.out.print("Send Heartbeat");
+            fixSession.send(messageFactory.heartbeat(testReqId));
         }
 
         @Override
-        public void onMessage(Message.Decodable message) {
-
+        public Bound bind(final FixSession fixSession) {
+            this.fixSession = fixSession;
+            return this;
         }
-
     }
 
 }

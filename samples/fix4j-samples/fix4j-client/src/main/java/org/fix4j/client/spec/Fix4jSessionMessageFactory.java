@@ -27,6 +27,7 @@ import org.fix4j.engine.Message;
 import org.fix4j.engine.session.FixSession;
 import org.fix4j.engine.session.FixSessionConfiguration;
 import org.fix4j.engine.session.SessionMessageFactory;
+import org.fix4j.engine.type.AsciiString;
 
 /**
  * Created by ryan on 14/12/16.
@@ -40,16 +41,49 @@ public class Fix4jSessionMessageFactory implements SessionMessageFactory {
     }
 
     @Override
-    public Message.Encodable create(FixSession.MessageType messageType) {
+    public Message.Encodable create(final FixSession.MessageType messageType) {
         switch (messageType) {
             case LOGON:
-                final LogonMessage logonMessage = new LogonMessage();
-                logonMessage.heartBtInt(fixSessionConfiguration.heartbeatInterval());
-                logonMessage.header()
+                final Logon logon = new Logon();
+                logon.heartBtInt(fixSessionConfiguration.heartbeatInterval());
+                logon.header()
                         .senderCompId(fixSessionConfiguration.senderCompId())
                         .targetCompId(fixSessionConfiguration.targetCompId());
-                return logonMessage.encodable();
+                return logon.encodable();
+            case HEARTBEAT:
+                final Heartbeat heartbeat = new Heartbeat();
+                return heartbeat.encodable();
         }
         return null;
     }
+
+    @Override
+    public Message.Encodable logon() {
+        final Logon logon = new Logon();
+        logon.heartBtInt(fixSessionConfiguration.heartbeatInterval());
+        logon.header()
+                .senderCompId(fixSessionConfiguration.senderCompId())
+                .targetCompId(fixSessionConfiguration.targetCompId());
+        return logon.encodable();
+    }
+
+    @Override
+    public Message.Encodable heartbeat() {
+        final Heartbeat heartbeat = new Heartbeat();
+        heartbeat.header()
+                .senderCompId(fixSessionConfiguration.senderCompId())
+                .targetCompId(fixSessionConfiguration.targetCompId());
+        return heartbeat.encodable();
+    }
+
+    @Override
+    public Message.Encodable heartbeat(final AsciiString testReqId) {
+        final Heartbeat heartbeat = new Heartbeat();
+        heartbeat.testReqId(testReqId);
+        heartbeat.header()
+                .senderCompId(fixSessionConfiguration.senderCompId())
+                .targetCompId(fixSessionConfiguration.targetCompId());
+        return heartbeat.encodable();
+    }
+
 }

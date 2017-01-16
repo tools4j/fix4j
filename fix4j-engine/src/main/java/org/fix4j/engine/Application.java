@@ -23,7 +23,9 @@
  */
 package org.fix4j.engine;
 
+import org.fix4j.engine.session.FixSession;
+
 public interface Application {
 
-    void onMessage(Message.Decodable message);
+    void onMessage(Message.Decodable message, FixSession fixSession);
 }

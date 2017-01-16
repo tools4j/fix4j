@@ -32,7 +32,7 @@ import java.time.Clock;
 
 import static org.fix4j.engine.util.EncodeUtil.generateChecksum;
 
-public class LogonMessage implements SpecMessage {
+public class Logon implements SpecMessage {
 
     private final Encoder encoder = new Encoder();
     private final Decoder decoder = new Decoder();
@@ -62,17 +62,17 @@ public class LogonMessage implements SpecMessage {
         return trailer;
     }
 
-    public LogonMessage encryptMethod(final int encryptMethod) {
+    public Logon encryptMethod(final int encryptMethod) {
         this.encryptMethod = encryptMethod;
         return this;
     }
 
-    public LogonMessage heartBtInt(final int heartBtInt) {
+    public Logon heartBtInt(final int heartBtInt) {
         this.heartBtInt = heartBtInt;
         return this;
     }
 
-    public LogonMessage resetSeqNumFlag(final boolean resetSeqNumFlag) {
+    public Logon resetSeqNumFlag(final boolean resetSeqNumFlag) {
         this.resetSeqNumFlag = resetSeqNumFlag;
         return this;
     }

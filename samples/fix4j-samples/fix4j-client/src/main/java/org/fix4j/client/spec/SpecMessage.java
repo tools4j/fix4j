@@ -30,4 +30,6 @@ public interface SpecMessage extends Message {
 
     Message.Decodable decodable(AsciiString content);
 
+    Message.Encodable encodable();
+
 }

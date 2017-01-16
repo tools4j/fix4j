@@ -24,7 +24,6 @@
 package org.fix4j.client.spec;
 
 import org.fix4j.engine.Message;
-import org.fix4j.engine.session.SessionLifecycle;
 import org.fix4j.engine.session.SessionManagement;
 import org.fix4j.engine.session.SessionMessageHandler;
 
@@ -38,7 +37,7 @@ public final class Fix4jSessionMessageHandler implements SessionMessageHandler {
         final MsgType msgType = message.msgType();
         switch (msgType) {
             case LOGON: {
-                final LogonMessage.Decoder decoder = message.as(LogonMessage.Decoder.class);
+                final Logon.Decoder decoder = message.as(Logon.Decoder.class);
                 System.out.println("Received Logon");
                 sessionManagement.loggedOn();
                 break;
@@ -47,6 +46,12 @@ public final class Fix4jSessionMessageHandler implements SessionMessageHandler {
                 final TestRequest.Decoder decoder = message.as(TestRequest.Decoder.class);
                 System.out.println("Received TestRequest");
                 sessionManagement.heartbeat(decoder.testReqId());
+                break;
+            }
+            case HEARTBEAT: {
+                final Heartbeat.Decoder decoder = message.as(Heartbeat.Decoder.class);
+                System.out.println("Received Heartbeat");
+                // todo - implement heartbeat handling
                 break;
             }
         }

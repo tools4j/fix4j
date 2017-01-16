@@ -8,6 +8,10 @@ subprojects {
 project ('quickfixj-server') {
     apply plugin: 'com.github.johnrengelman.shadow'
 
+    dependencies {
+        compile 'com.google.guava:guava:20.0'
+    }
+
     jar {
         manifest {
             attributes 'Main-Class': 'org.fix4j.quickfix.QuickfixServer'

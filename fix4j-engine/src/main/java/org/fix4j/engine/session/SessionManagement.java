@@ -32,6 +32,6 @@ public interface SessionManagement {
 
     void loggedOn();
 
-    void heartbeat(AsciiString testRequestId);
+    void heartbeat(AsciiString testReqId);
 
 }

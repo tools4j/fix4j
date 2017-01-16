@@ -32,8 +32,12 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 public enum MsgType implements Message.Type {
-    LOGON("A", LogonMessage::new, FixSession.MessageType.LOGON),
-    TEST_REQUEST("1", TestRequest::new, FixSession.MessageType.TEST_REQUEST);
+    LOGON("A", Logon::new, FixSession.MessageType.LOGON),
+    TEST_REQUEST("1", TestRequest::new, FixSession.MessageType.TEST_REQUEST),
+    HEARTBEAT("0", Heartbeat::new, FixSession.MessageType.HEARTBEAT),
+    REJECT("3", Reject::new, FixSession.MessageType.REJECT),
+    MARKET_DATA_REQUEST("V", MarketDataRequest::new, null)
+    ;
 
     private String code;
 

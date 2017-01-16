@@ -25,8 +25,12 @@ package org.fix4j.client.spec;
 
 import org.fix4j.engine.Message;
 import org.fix4j.engine.codec.FixDecoder;
+import org.fix4j.engine.codec.TagDecoder;
 import org.fix4j.engine.codec.ValueHandler;
 import org.fix4j.engine.type.AsciiString;
+import org.tools4j.mmap.io.MessageWriter;
+
+import java.time.Clock;
 
 /**
  * Created by ryan on 14/12/16.
@@ -34,10 +38,13 @@ import org.fix4j.engine.type.AsciiString;
 public class TestRequest implements SpecMessage {
 
     private final Decoder decoder = new Decoder();
+    private final Encoder encoder = new Encoder();
 
     public final class Decoder implements Decodable {
 
         private final FixDecoder fixDecoder = new FixDecoder();
+        private TagDecoder tagDecoder;
+
         private final AsciiString.Mutable testReqId = new AsciiString.Mutable(128);
         private ValueHandler decoding = (tag, valueDecoder) -> {
             switch (tag) {
@@ -48,7 +55,8 @@ public class TestRequest implements SpecMessage {
         };
 
         private Decoder wrap(final AsciiString content) {
-            fixDecoder.wrap(content);
+            testReqId.reset();
+            tagDecoder = fixDecoder.wrap(content);
             return this;
         }
 
@@ -58,13 +66,28 @@ public class TestRequest implements SpecMessage {
         }
 
         public AsciiString testReqId() {
-            fixDecoder.tag(decoding);
+            while (testReqId.length() == 0 && tagDecoder.hasNext()) {
+                fixDecoder.tag(decoding);
+            }
             return testReqId;
+        }
+    }
+
+    public final class Encoder implements Encodable {
+
+        @Override
+        public void encode(int sequenceNumber, Clock clock, MessageWriter messageWriter) {
+
         }
     }
 
     @Override
     public Decodable decodable(final AsciiString content) {
         return decoder.wrap(content);
+    }
+
+    @Override
+    public Encodable encodable() {
+        return encoder;
     }
 }
