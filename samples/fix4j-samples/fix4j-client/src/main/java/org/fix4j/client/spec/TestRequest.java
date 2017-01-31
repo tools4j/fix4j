@@ -23,7 +23,6 @@
  */
 package org.fix4j.client.spec;
 
-import org.fix4j.engine.Message;
 import org.fix4j.engine.codec.FixDecoder;
 import org.fix4j.engine.codec.TagDecoder;
 import org.fix4j.engine.codec.ValueHandler;
@@ -40,7 +39,7 @@ public class TestRequest implements SpecMessage {
     private final Decoder decoder = new Decoder();
     private final Encoder encoder = new Encoder();
 
-    public final class Decoder implements Decodable {
+    public final class Decoder implements Inbound {
 
         private final FixDecoder fixDecoder = new FixDecoder();
         private TagDecoder tagDecoder;
@@ -73,7 +72,7 @@ public class TestRequest implements SpecMessage {
         }
     }
 
-    public final class Encoder implements Encodable {
+    public final class Encoder implements Outbound {
 
         @Override
         public void encode(int sequenceNumber, Clock clock, MessageWriter messageWriter) {
@@ -82,12 +81,12 @@ public class TestRequest implements SpecMessage {
     }
 
     @Override
-    public Decodable decodable(final AsciiString content) {
+    public Inbound asInbound(final AsciiString content) {
         return decoder.wrap(content);
     }
 
     @Override
-    public Encodable encodable() {
+    public Outbound asOutbound() {
         return encoder;
     }
 }

@@ -46,7 +46,7 @@ public class Fix4SessionLifecycle {
 
         private transient FixSession fixSession;
 
-        private Message.Encodable heartbeat;
+        private Message.Outbound heartbeat;
 
         public Initiator(final SessionMessageFactory messageFactory, final SessionMessageHandler messageHandler) {
             this.messageFactory = messageFactory;
@@ -71,7 +71,7 @@ public class Fix4SessionLifecycle {
         }
 
         @Override
-        public void onMessage(final Message.Decodable message) {
+        public void onMessage(final Message.Inbound message) {
             messageHandler.onMessage(this, message);
         }
 

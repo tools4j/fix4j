@@ -1,93 +1,107 @@
 package org.fix4j.client.spec;
 
+import org.fix4j.engine.codec.FixDecoder;
 import org.fix4j.engine.codec.FixEncoder;
 import org.fix4j.engine.type.AsciiString;
+import org.fix4j.engine.type.Qty;
+import org.fix4j.engine.type.UTCTimestamp;
 import org.tools4j.mmap.io.MessageWriter;
 
 import java.time.Clock;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.fix4j.engine.util.EncodeUtil.generateChecksum;
 
-public class MarketDataRequest implements SpecMessage {
+public class NewOrderSingle implements SpecMessage {
 
-    private final Decoder decoder = new Decoder();
-    private final Encoder encoder = new Encoder();
+    private final InboundReader inboundReader = new InboundReader();
+    private final OutboundWriter outboundWriter = new OutboundWriter();
     private final Header header = new Header();
     private final Trailer trailer = new Trailer();
 
-    private final AsciiString.Mutable mdReqId = new AsciiString.Mutable(128);
+    private final AsciiString.Mutable clOrdId = new AsciiString.Mutable(128);
     private final AsciiString.Mutable symbol = new AsciiString.Mutable(128);
-    private char subscriptionRequestType;
+    private char side;
+    private final UTCTimestamp transactTime = new UTCTimestamp();
+    private final Qty ordQty = new Qty();
+    private char ordType;
 
-    // todo - need to create lists for primitives
-    private final List<Character> mdEntryTypes = new ArrayList<>();
-
-    public MarketDataRequest mdReqId(final AsciiString mdReqId) {
-        this.mdReqId.reset();
-        this.mdReqId.append(mdReqId);
+    public NewOrderSingle clOrdId(final AsciiString clOrdId) {
+        this.clOrdId.reset();
+        this.clOrdId.append(clOrdId);
         return this;
     }
 
-    public MarketDataRequest symbol(final AsciiString symbol) {
+    public NewOrderSingle symbol(final AsciiString symbol) {
         this.symbol.reset();
         this.symbol.append(symbol);
         return this;
     }
 
-    public MarketDataRequest subscriptionRequestType(final char subscriptionRequestType) {
-        this.subscriptionRequestType = subscriptionRequestType;
+    public NewOrderSingle side(final char side) {
+        this.side = side;
         return this;
     }
 
-    public MarketDataRequest mdEntryType(final char mdEntryType) {
-        this.mdEntryTypes.add(mdEntryType);
+    public NewOrderSingle transactTime(final UTCTimestamp transactTime) {
+        this.transactTime.epochMillis(transactTime.epochMillis());
         return this;
     }
 
+    public NewOrderSingle ordQty(final Qty ordQty) {
+        this.ordQty.value(ordQty.value());
+        return this;
+    }
+
+    public NewOrderSingle ordType(final char ordType) {
+        this.ordType = ordType;
+        return this;
+    }
+
+    @Override
     public Inbound asInbound(final AsciiString content) {
-        return decoder;
+        return inboundReader.wrap(content);
     }
 
     @Override
     public Outbound asOutbound() {
-        return encoder;
+        return outboundWriter;
     }
 
     public Header header() {
         return header;
     }
 
-    private final class Decoder implements Inbound {
+    private final class InboundReader implements Inbound {
+
+        private final FixDecoder fixDecoder = new FixDecoder();
 
         @Override
         public MsgType msgType() {
-            return MsgType.MARKET_DATA_REQUEST;
+            return MsgType.NEW_ORDER_SINGLE;
+        }
+
+        public InboundReader wrap(final AsciiString content) {
+            fixDecoder.wrap(content);
+            return this;
         }
     }
 
-    private final class Encoder implements Outbound, AsciiString {
+    public final class OutboundWriter implements Outbound, AsciiString {
 
         private final FixEncoder fixEncoder = new FixEncoder();
         private final AsciiString.Mutable content = new AsciiString.Mutable(128);
 
-        @Override
         public void encode(int sequenceNumber, Clock clock, MessageWriter messageWriter) {
             fixEncoder.wrap(content)
-                    .tag(262).value(mdReqId)
-                    .tag(263).value(subscriptionRequestType)
-                    .tag(264).value(1)
-                    .tag(146).value(1)
-                    .tag(55).value(symbol);
-
-            fixEncoder.tag(267).value(mdEntryTypes.size());
-            for (final char mdEntryType : mdEntryTypes) {
-                fixEncoder.tag(269).value(mdEntryType);
-            }
+                    .tag(11).value(clOrdId)
+                    .tag(55).value(symbol)
+                    .tag(54).value(side)
+                    .tag(60).value(transactTime)
+                    .tag(38).value((long) ordQty.value())
+                    .tag(40).value(ordType);
 
             header
-                    .msgType("V")
+                    .msgType("D")
                     .msgSeqNum(sequenceNumber)
                     .sendingTime(clock.millis())
                     .encode();
@@ -101,6 +115,7 @@ public class MarketDataRequest implements SpecMessage {
                     .checksum(generateChecksum(header, content, trailer));
 
             messageWriter.putStringAscii(this);
+
         }
 
         @Override
@@ -119,6 +134,5 @@ public class MarketDataRequest implements SpecMessage {
             }
             throw new IndexOutOfBoundsException("index[" + idx + "], length [" + length() + "]");
         }
-
     }
 }

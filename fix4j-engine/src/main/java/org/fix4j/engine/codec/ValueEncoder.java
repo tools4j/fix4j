@@ -36,4 +36,6 @@ public interface ValueEncoder {
     TagEncoder value(char c);
 
     TagEncoder value(UTCTimestamp utcTimestamp);
+
+    // todo - add value(Qty qty)
 }

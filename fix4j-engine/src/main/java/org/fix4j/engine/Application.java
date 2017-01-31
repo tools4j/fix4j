@@ -27,5 +27,5 @@ import org.fix4j.engine.session.FixSession;
 
 public interface Application {
 
-    void onMessage(Message.Decodable message, FixSession fixSession);
+    void onMessage(Message.Inbound message, FixSession fixSession);
 }

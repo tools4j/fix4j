@@ -30,6 +30,6 @@ import org.fix4j.engine.Message;
  */
 public interface SessionMessageHandler {
 
-    void onMessage(SessionManagement sessionManagement, Message.Decodable message);
+    void onMessage(SessionManagement sessionManagement, Message.Inbound message);
 
 }

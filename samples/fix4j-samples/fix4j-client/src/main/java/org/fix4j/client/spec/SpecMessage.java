@@ -28,8 +28,8 @@ import org.fix4j.engine.type.AsciiString;
 
 public interface SpecMessage extends Message {
 
-    Message.Decodable decodable(AsciiString content);
+    Inbound asInbound(AsciiString content);
 
-    Message.Encodable encodable();
+    Outbound asOutbound();
 
 }

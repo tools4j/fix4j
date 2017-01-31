@@ -28,12 +28,12 @@ import org.fix4j.engine.type.AsciiString;
 
 public interface SessionMessageFactory {
 
-    Message.Encodable create(FixSession.MessageType messageType);
+    Message.Outbound create(FixSession.MessageType messageType);
 
-    Message.Encodable logon();
+    Message.Outbound logon();
 
-    Message.Encodable heartbeat();
+    Message.Outbound heartbeat();
 
-    Message.Encodable heartbeat(AsciiString testReqId);
+    Message.Outbound heartbeat(AsciiString testReqId);
 
 }

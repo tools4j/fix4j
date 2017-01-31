@@ -1,10 +1,8 @@
 package org.fix4j.client.spec;
 
-import org.fix4j.engine.Message;
 import org.fix4j.engine.codec.FixDecoder;
 import org.fix4j.engine.codec.FixEncoder;
 import org.fix4j.engine.codec.ValueDecoder;
-import org.fix4j.engine.codec.ValueHandler;
 import org.fix4j.engine.type.AsciiString;
 import org.tools4j.mmap.io.MessageWriter;
 
@@ -19,16 +17,16 @@ public class Reject implements SpecMessage {
     private final Decoder decoder = new Decoder();
 
     @Override
-    public Decodable decodable(final AsciiString content) {
+    public Inbound asInbound(final AsciiString content) {
         return decoder.wrap(content);
     }
 
     @Override
-    public Encodable encodable() {
+    public Outbound asOutbound() {
         return encoder;
     }
 
-    public final class Encoder implements Encodable, AsciiString {
+    public final class Encoder implements Outbound, AsciiString {
 
         private final FixEncoder fixEncoder = new FixEncoder();
         private final AsciiString.Mutable content = new AsciiString.Mutable(128);
@@ -49,7 +47,7 @@ public class Reject implements SpecMessage {
         }
     }
 
-    public final class Decoder implements Decodable {
+    public final class Decoder implements Inbound {
 
         private final ValueHandler valueHandler = new ValueHandler();
 

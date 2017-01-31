@@ -49,7 +49,7 @@ public class Fix4jClientMessageFactory implements MessageFactory {
     }
 
     @Override
-    public Message.Decodable create(final AsciiString content) {
+    public Message.Inbound create(final AsciiString content) {
         final TagDecoder tagDecoder = fixDecoder.wrap(content);
         headerHandler.reset();
         while (tagDecoder.hasNext() && headerHandler.msgType == null) {
@@ -57,7 +57,7 @@ public class Fix4jClientMessageFactory implements MessageFactory {
         }
 
         final SpecMessage specMessage = cache.get(headerHandler.msgType);
-        return specMessage.decodable(content);
+        return specMessage.asInbound(content);
     }
 
     private final class HeaderHandler implements ValueHandler, Appendable {

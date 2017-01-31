@@ -36,7 +36,9 @@ public enum MsgType implements Message.Type {
     TEST_REQUEST("1", TestRequest::new, FixSession.MessageType.TEST_REQUEST),
     HEARTBEAT("0", Heartbeat::new, FixSession.MessageType.HEARTBEAT),
     REJECT("3", Reject::new, FixSession.MessageType.REJECT),
-    MARKET_DATA_REQUEST("V", MarketDataRequest::new, null)
+    MARKET_DATA_REQUEST("V", MarketDataRequest::new, null),
+    MARKET_DATA_SNAPSHOT_INCREMENTAL_REFRESH("X", MarketDataIncrementalRefresh::new, null),
+    NEW_ORDER_SINGLE("D", NewOrderSingle::new, null),
     ;
 
     private String code;

@@ -33,7 +33,7 @@ import org.fix4j.engine.session.SessionMessageHandler;
 public final class Fix4jSessionMessageHandler implements SessionMessageHandler {
 
     @Override
-    public void onMessage(final SessionManagement sessionManagement, final Message.Decodable message) {
+    public void onMessage(final SessionManagement sessionManagement, final Message.Inbound message) {
         final MsgType msgType = message.msgType();
         switch (msgType) {
             case LOGON: {

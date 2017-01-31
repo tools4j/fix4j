@@ -1,6 +1,5 @@
 package org.fix4j.client.spec;
 
-import org.fix4j.engine.Message;
 import org.fix4j.engine.codec.FixEncoder;
 import org.fix4j.engine.type.AsciiString;
 import org.tools4j.mmap.io.MessageWriter;
@@ -22,12 +21,12 @@ public class Heartbeat implements SpecMessage {
 
     private AsciiString.Mutable testReqId = new AsciiString.Mutable(128);
 
-    public Decodable decodable(final AsciiString content) {
+    public Inbound asInbound(final AsciiString content) {
         return decoder.wrap(content);
     }
 
     @Override
-    public Encodable encodable() {
+    public Outbound asOutbound() {
         return encoder;
     }
 
@@ -41,7 +40,7 @@ public class Heartbeat implements SpecMessage {
         return header;
     }
 
-    public final class Encoder implements Message.Encodable, AsciiString {
+    public final class Encoder implements Outbound, AsciiString {
 
         private final FixEncoder fixEncoder = new FixEncoder();
         private final AsciiString.Mutable content = new AsciiString.Mutable(128);
@@ -86,11 +85,11 @@ public class Heartbeat implements SpecMessage {
         }
     }
 
-    public final class Decoder implements Message.Decodable {
+    public final class Decoder implements Inbound {
 
         private AsciiString content;
 
-        public Decodable wrap(final AsciiString content) {
+        public Inbound wrap(final AsciiString content) {
             this.content = content;
             return this;
         }

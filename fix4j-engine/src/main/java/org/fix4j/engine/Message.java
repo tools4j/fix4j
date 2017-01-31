@@ -34,14 +34,14 @@ public interface Message {
     /**
      * Created by ryan on 13/12/16.
      */
-    interface Encodable {
+    interface Outbound {
         void encode(final int sequenceNumber, final Clock clock, final MessageWriter messageWriter);
     }
 
-    interface Decodable {
+    interface Inbound {
         <T extends Type> T msgType();
 
-        default <T extends Decodable> T as(Class<T> decoderClass) {
+        default <T extends Inbound> T as(Class<T> decoderClass) {
             return decoderClass.cast(this);
         }
     }

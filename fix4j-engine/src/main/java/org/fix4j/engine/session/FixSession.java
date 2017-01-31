@@ -95,7 +95,7 @@ public class FixSession {
         this.outboundEnumerator = outbound.enumerator();
     }
 
-    public FixSession send(final Message.Encodable message) {
+    public FixSession send(final Message.Outbound message) {
         final int nextSequenceNumber = this.sequenceNumber.incrementAndGet();
         final Clock systemUTC = Clock.systemUTC();
         final MessageWriter messageWriter = outboundAppender.appendMessage();
@@ -122,7 +122,7 @@ public class FixSession {
         if (inboundEnumerator.hasNextMessage()) {
             final MessageReader messageReader = inboundEnumerator.readNextMessage();
             messageReader.getStringAscii(readAsAsciiString.reset());
-            final Message.Decodable message = messageFactory.create(readAsAsciiString.asciiString);
+            final Message.Inbound message = messageFactory.create(readAsAsciiString.asciiString);
 
             bound.onMessage(message);
             application.onMessage(message, this);

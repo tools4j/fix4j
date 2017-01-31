@@ -138,6 +138,8 @@ public class QuickfixServer {
         private final Random random = new Random(System.nanoTime());
 
         private double price;
+        public String offerId;
+        public String bidId;
 
         public Mid(final double price) {
             this.price = price;
@@ -149,6 +151,24 @@ public class QuickfixServer {
             } else {
                 price -= 0.01;
             }
+        }
+
+        public Mid bidId(String bidId) {
+            this.bidId = bidId;
+            return this;
+        }
+
+        public String bidId() {
+            return bidId;
+        }
+
+        public String offerId() {
+            return offerId;
+        }
+
+        public Mid offerId(String offerId) {
+            this.offerId = offerId;
+            return this;
         }
     }
 
@@ -166,39 +186,79 @@ public class QuickfixServer {
             while (!Thread.interrupted()) {
                 rateLimiter.acquire();
                 for (final Subscription subscription : subscriptions) {
-                    final Mid mid = mids.computeIfAbsent(subscription.symbol, s -> new Mid(1.00));
-                    mid.move();
-
-                    final MarketDataIncrementalRefresh marketDataIncrementalRefresh = new MarketDataIncrementalRefresh();
-                    marketDataIncrementalRefresh.setString(MDReqID.FIELD, subscription.mdReqId);
-
-                    final MarketDataIncrementalRefresh.NoMDEntries bid = new MarketDataIncrementalRefresh.NoMDEntries();
-                    bid.setChar(MDUpdateAction.FIELD, MDUpdateAction.NEW);
-                    bid.setString(Symbol.FIELD, subscription.symbol);
-                    bid.setChar(MDEntryType.FIELD, MDEntryType.BID);
-                    bid.setString(MDEntryID.FIELD, UUID.randomUUID().toString());
-                    bid.setDouble(MDEntryPx.FIELD, mid.price - 0.001);
-                    bid.setInt(MDEntrySize.FIELD, 1000000);
-                    bid.setString(Currency.FIELD, subscription.symbol.substring(0, 3));
-                    marketDataIncrementalRefresh.addGroup(bid);
-
-                    final MarketDataIncrementalRefresh.NoMDEntries offer = new MarketDataIncrementalRefresh.NoMDEntries();
-                    offer.setChar(MDUpdateAction.FIELD, MDUpdateAction.NEW);
-                    offer.setString(Symbol.FIELD, subscription.symbol);
-                    offer.setChar(MDEntryType.FIELD, MDEntryType.OFFER);
-                    offer.setString(MDEntryID.FIELD, UUID.randomUUID().toString());
-                    offer.setDouble(MDEntryPx.FIELD, mid.price + 0.001);
-                    offer.setInt(MDEntrySize.FIELD, 1000000);
-                    offer.setString(Currency.FIELD, subscription.symbol.substring(0, 3));
-                    marketDataIncrementalRefresh.addGroup(offer);
+                    MarketDataIncrementalRefresh refresh;
+                    Mid mid = mids.get(subscription.symbol);
+                    if (mid == null) {
+                        mid = new Mid(1.00);
+                        mids.put(subscription.symbol, mid);
+                        refresh = createNewRefresh(mid, subscription);
+                    } else {
+                        refresh = updateExistingRefresh(mid, subscription);
+                    }
 
                     try {
-                        Session.sendToTarget(marketDataIncrementalRefresh, subscription.sessionID);
+                        Session.sendToTarget(refresh, subscription.sessionID);
                     } catch (final SessionNotFound sessionNotFound) {
                         logger.error("Failed to send market update to session.", sessionNotFound);
                     }
                 }
             }
+        }
+
+        private MarketDataIncrementalRefresh updateExistingRefresh(final Mid mid, final Subscription subscription) {
+            mid.move();
+
+            final MarketDataIncrementalRefresh marketDataIncrementalRefresh = new MarketDataIncrementalRefresh();
+            marketDataIncrementalRefresh.setString(MDReqID.FIELD, subscription.mdReqId);
+
+            final MarketDataIncrementalRefresh.NoMDEntries bid = new MarketDataIncrementalRefresh.NoMDEntries();
+            bid.setChar(MDUpdateAction.FIELD, MDUpdateAction.CHANGE);
+            bid.setString(Symbol.FIELD, subscription.symbol);
+            bid.setChar(MDEntryType.FIELD, MDEntryType.BID);
+            bid.setString(MDEntryID.FIELD, mid.bidId());
+            bid.setDouble(MDEntryPx.FIELD, mid.price - 0.001);
+            bid.setInt(MDEntrySize.FIELD, 1000000);
+            bid.setString(Currency.FIELD, subscription.symbol.substring(0, 3));
+            marketDataIncrementalRefresh.addGroup(bid);
+
+            final MarketDataIncrementalRefresh.NoMDEntries offer = new MarketDataIncrementalRefresh.NoMDEntries();
+            offer.setChar(MDUpdateAction.FIELD, MDUpdateAction.CHANGE);
+            offer.setString(Symbol.FIELD, subscription.symbol);
+            offer.setChar(MDEntryType.FIELD, MDEntryType.OFFER);
+            offer.setString(MDEntryID.FIELD, mid.offerId());
+            offer.setDouble(MDEntryPx.FIELD, mid.price + 0.001);
+            offer.setInt(MDEntrySize.FIELD, 1000000);
+            offer.setString(Currency.FIELD, subscription.symbol.substring(0, 3));
+            marketDataIncrementalRefresh.addGroup(offer);
+
+            return marketDataIncrementalRefresh;
+        }
+
+        private MarketDataIncrementalRefresh createNewRefresh(final Mid mid, final Subscription subscription) {
+            final MarketDataIncrementalRefresh marketDataIncrementalRefresh = new MarketDataIncrementalRefresh();
+            marketDataIncrementalRefresh.setString(MDReqID.FIELD, subscription.mdReqId);
+
+            final MarketDataIncrementalRefresh.NoMDEntries bid = new MarketDataIncrementalRefresh.NoMDEntries();
+            bid.setChar(MDUpdateAction.FIELD, MDUpdateAction.NEW);
+            bid.setString(Symbol.FIELD, subscription.symbol);
+            bid.setChar(MDEntryType.FIELD, MDEntryType.BID);
+            bid.setString(MDEntryID.FIELD, mid.bidId(UUID.randomUUID().toString()).bidId());
+            bid.setDouble(MDEntryPx.FIELD, mid.price - 0.001);
+            bid.setInt(MDEntrySize.FIELD, 1000000);
+            bid.setString(Currency.FIELD, subscription.symbol.substring(0, 3));
+            marketDataIncrementalRefresh.addGroup(bid);
+
+            final MarketDataIncrementalRefresh.NoMDEntries offer = new MarketDataIncrementalRefresh.NoMDEntries();
+            offer.setChar(MDUpdateAction.FIELD, MDUpdateAction.NEW);
+            offer.setString(Symbol.FIELD, subscription.symbol);
+            offer.setChar(MDEntryType.FIELD, MDEntryType.OFFER);
+            offer.setString(MDEntryID.FIELD, mid.offerId(UUID.randomUUID().toString()).offerId());
+            offer.setDouble(MDEntryPx.FIELD, mid.price + 0.001);
+            offer.setInt(MDEntrySize.FIELD, 1000000);
+            offer.setString(Currency.FIELD, subscription.symbol.substring(0, 3));
+            marketDataIncrementalRefresh.addGroup(offer);
+
+            return marketDataIncrementalRefresh;
         }
 
         public void subscribe(final Subscription subscription) {

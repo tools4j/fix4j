@@ -35,6 +35,6 @@ public interface SessionLifecycle {
     interface Bound {
         void manage();
 
-        void onMessage(Message.Decodable message);
+        void onMessage(Message.Inbound message);
     }
 }

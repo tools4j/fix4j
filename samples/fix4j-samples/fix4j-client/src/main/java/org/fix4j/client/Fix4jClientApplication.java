@@ -23,9 +23,7 @@
  */
 package org.fix4j.client;
 
-import org.fix4j.client.spec.MarketDataRequest;
-import org.fix4j.client.spec.MsgType;
-import org.fix4j.client.spec.Reject;
+import org.fix4j.client.spec.*;
 import org.fix4j.engine.Application;
 import org.fix4j.engine.Message;
 import org.fix4j.engine.session.FixSession;
@@ -36,21 +34,20 @@ import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
 
-/**
- * Created by ryan on 14/12/16.
- */
 final class Fix4jClientApplication implements Application {
 
     private static final Logger log = LoggerFactory.getLogger(Fix4jClientApplication.class);
 
     private final FixSessionConfiguration fixSessionConfiguration;
 
+    private long lastOrderSent = 0;
+
     public Fix4jClientApplication(FixSessionConfiguration fixSessionConfiguration) {
         this.fixSessionConfiguration = fixSessionConfiguration;
     }
 
     @Override
-    public void onMessage(final Message.Decodable message, final FixSession fixSession) {
+    public void onMessage(final Message.Inbound message, final FixSession fixSession) {
         final MsgType msgType = message.msgType();
         switch (msgType) {
             case LOGON:
@@ -58,8 +55,29 @@ final class Fix4jClientApplication implements Application {
                 break;
             case REJECT:
                 final Reject.Decoder reject = message.as(Reject.Decoder.class);
-                System.out.println(String.format("Received reject for [%s:%s]: [%s]", reject.refMsgType(), reject.refTagId(), reject.text()));
+                System.out.println(String.format("Received reject for [%s]: [%s: %s]", reject.refMsgType(), reject.text(), reject.refTagId()));
+                break;
+            case MARKET_DATA_SNAPSHOT_INCREMENTAL_REFRESH:
+                final MarketDataIncrementalRefresh.Decoder incremental = message.as(MarketDataIncrementalRefresh.Decoder.class);
+                long now = System.currentTimeMillis();
+                if (now - lastOrderSent > 5000) {
+                    // send an order
+                    sendOrder(fixSession, incremental);
+                    lastOrderSent = now;
+                }
+                break;
         }
+    }
+
+    private void sendOrder(final FixSession fixSession, final MarketDataIncrementalRefresh.Decoder incremental) {
+        final NewOrderSingle newOrderSingle = new NewOrderSingle();
+        newOrderSingle.header()
+                .senderCompId(fixSessionConfiguration.senderCompId())
+                .targetCompId(fixSessionConfiguration.targetCompId());
+
+        newOrderSingle.symbol(incremental.symbol())
+
+        fixSession.send(newOrderSingle.asOutbound());
     }
 
     private void subscribe(final FixSession fixSession) {
@@ -71,6 +89,6 @@ final class Fix4jClientApplication implements Application {
         marketDataRequest.mdReqId(new AsciiString.Mutable(UUID.randomUUID().toString()));
         marketDataRequest.symbol(new AsciiString.Mutable("AUD/USD"));
         marketDataRequest.subscriptionRequestType('1');
-        fixSession.send(marketDataRequest.encodable());
+        fixSession.send(marketDataRequest.asOutbound());
     }
 }
