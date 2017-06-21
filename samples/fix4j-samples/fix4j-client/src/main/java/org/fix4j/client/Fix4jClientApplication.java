@@ -75,7 +75,7 @@ final class Fix4jClientApplication implements Application {
                 .senderCompId(fixSessionConfiguration.senderCompId())
                 .targetCompId(fixSessionConfiguration.targetCompId());
 
-        newOrderSingle.symbol(incremental.symbol())
+        newOrderSingle.symbol(incremental.symbol());
 
         fixSession.send(newOrderSingle.asOutbound());
     }
