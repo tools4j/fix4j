@@ -4,4 +4,4 @@ jdk:
 branches:
   only:
     - master
-    - engine
+    - feature/engine
